@@ -1,0 +1,18 @@
+body {
+    padding-top: 70px;
+}
+
+.thumbnail>img{
+    height:212px;
+}
+
+footer{
+    background-color:#101010;
+    min-height:70px;
+    color:white;
+}
+
+footer div{
+    min-height:79px;
+    line-height:70px;
+}

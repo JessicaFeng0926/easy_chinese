@@ -5,7 +5,6 @@ import os
 from app.models import Role,User
 
 
-
 #创建app
 app = create_app(os.environ.get('EC_CONFIG') or 'default')
 

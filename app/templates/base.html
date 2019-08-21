@@ -1,0 +1,75 @@
+{% extends 'bootstrap/base.html'%}
+{% block head%}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('static',filename='css/base.css')}}">
+{%endblock head%}
+{% block title%}Easy Chinese - {%block mytitle%}{%endblock mytitle%}{% endblock title%}
+
+{% block navbar%}
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Easy Chinese</a>
+      </div>
+  
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Book a trial lesson <span class="sr-only">(current)</span></a></li>
+        </ul>
+        <form class="navbar-form navbar-left">
+          <div class="form-group">
+            <input type="text" class="form-control" placeholder="Search">
+          </div>
+          <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+        <ul class="nav navbar-nav navbar-right">
+          {% if current_user.is_authenticated%}
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Personal center of jessica <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Reset password</a></li>
+              <li><a href="#">Reset email</a></li>
+              <li><a href="#">Log out</a></li>
+            </ul>
+          </li>
+          {%else%}
+          <li><a href="#">Log in</a></li>
+          <li><a href="#">Sign up</a></li>
+          {%endif%}
+        </ul><!-- navbar-right -->
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+{% endblock navbar%}
+
+{% block content %}
+<div class='container'>
+    {% for message in get_flashed_messages()%}
+    <div class='alert alert-warning'>
+        <button type='button' class='close' data-dismiss='alert'>&times;</button>
+        {{message}}
+    </div>
+    {% endfor %}
+
+    {%block page_content%}{%endblock page_content%}
+</div>
+<footer>
+  <div class='col-sm-4 col-md-4 text-center'>
+      <img src="{{url_for('static',filename='img/skype.jpg')}}" class='img-rounded' height='30'>
+      <img src="{{url_for('static',filename='img/wechat.png')}}" class='img-rounded' height='30'>
+  </div>
+  <div class='col-sm-6 col-md-6 text-left'>
+      Copyright&nbsp;&copy;&nbsp;2006-2019 eChineseLearning.com All Rights Reserved.
+  </div>
+  
+    
+</footer>
+{%endblock content%}

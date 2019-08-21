@@ -1,5 +1,5 @@
 import os
-import mysql.connector
+
 
 class Config():
     '''基本配置'''
