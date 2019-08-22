@@ -82,6 +82,8 @@ class User(UserMixin,db.Model):
     username = db.Column(db.String(64),unique=True,index=True)
     #密码的哈希值
     password_hash = db.Column(db.String(128))
+    #时区
+    timezone = db.Column(db.String(8))
     #是否确认
     confirmed = db.Column(db.Boolean,default=False)
     #姓名
@@ -96,6 +98,14 @@ class User(UserMixin,db.Model):
     image = db.Column(db.String(128),unique=True)
     #绑定外键，用户角色
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
+
+    def __init__(self,**kwargs):
+        '''这是初始化方法'''
+        super(User,self).__init__(**kwargs)
+        #新注册的用户默认角色都是visitor
+        visitor = Role.query.filter_by(default=True).first()
+        self.role = visitor
+
     
     @property
     def password(self):

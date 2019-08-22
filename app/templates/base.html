@@ -16,7 +16,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">Easy Chinese</a>
+        <a class="navbar-brand" href="{{url_for('main.index')}}">Easy Chinese</a>
       </div>
   
       <!-- Collect the nav links, forms, and other content for toggling -->
@@ -42,7 +42,7 @@
           </li>
           {%else%}
           <li><a href="#">Log in</a></li>
-          <li><a href="#">Sign up</a></li>
+          <li><a href="{{url_for('auth.sign_up')}}">Sign up</a></li>
           {%endif%}
         </ul><!-- navbar-right -->
       </div><!-- /.navbar-collapse -->
@@ -67,7 +67,7 @@
       <img src="{{url_for('static',filename='img/wechat.png')}}" class='img-rounded' height='30'>
   </div>
   <div class='col-sm-6 col-md-6 text-left'>
-      Copyright&nbsp;&copy;&nbsp;2006-2019 eChineseLearning.com All Rights Reserved.
+      Copyright&nbsp;&copy;&nbsp;2006-2019 easychinese.com All Rights Reserved.
   </div>
   
     
