@@ -1,0 +1,8 @@
+{%extends 'email/baseemail.html'%}
+
+{%block text%}
+<p>
+Please click <a href="{{url_for('auth.confirm',token=token,_external=True)}}">here</a> to confirm your account.You can also copy the following url and paste it in your browser:
+{{url_for('auth.confirm',token=token,_external=True)}}
+</p>
+{%endblock text%}

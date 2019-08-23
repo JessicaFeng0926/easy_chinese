@@ -2,6 +2,9 @@ from . import db,login_manager
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_login import UserMixin,AnonymousUserMixin
 from datetime import datetime
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask import current_app
+
 
 class Role(db.Model):
     '''这是用户角色的模型类'''
@@ -144,7 +147,80 @@ class User(UserMixin,db.Model):
         '''这是自定义的判断是否是管理员的方法'''
         return self.can(Permission.ADMINISTRATOR)
 
+    def generate_confirm_token(self,expiration=3600):
+        '''这是生成用于确认账号的口令的方法'''
+        s=Serializer(current_app.config['SECRET_KEY'],expires_in=expiration)
+        token=s.dumps({'confirm':self.id})
+        return token
     
+    @staticmethod
+    def confirm(token):
+        '''这是验证口令，确认账号的方法'''
+        s=Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data=s.loads(token)
+        except:
+            return False,'wrong token'
+        id=data.get('confirm')
+        user=User.query.get(id)
+        if user:
+            user.confirmed=True
+            db.session.add(user)
+            return True,user.username
+        else:
+            return False,'nobody'
+    
+    def generate_reset_password_token(self,expiration=3600):
+        '''这是生成用于重置密码的口令的方法'''
+        s=Serializer(current_app.config['SECRET_KEY'],expires_in=expiration)
+        token=s.dumps({'reset':self.id})
+        return token
+
+    @staticmethod
+    def reset_password(token,new_password):
+        '''这是重置密码的静态方法'''
+        s=Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data=s.loads(token)
+        except:
+            return False
+        id=data.get('reset')
+        user=User.query.get(id)
+        if user:
+            user.password=new_password
+            db.session.add(user)
+            return True
+        else:
+            return False
+
+    def generate_reset_email_token(self,new_email,expiration=3600):
+        '''这是生成修改邮箱口令的方法'''
+        s=Serializer(current_app.config['SECRET_KEY'],expires_in=expiration)
+        token=s.dumps({'change_email':self.id,'new_email':new_email})
+        return token
+
+    def reset_email(self,token):
+        '''这是修改邮箱的方法'''
+        s=Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data=s.loads(token)
+        except:
+            return False
+        if data.get('change_email')!=self.id:
+            return False
+        new_email=data.get('new_email')
+        if new_email is None:
+            return False
+        #可能学生提交新邮箱的时候那个邮箱还没有被用，但是确认修改邮箱的时候已经被占用了，
+        # 所以还是要检查一下
+        if User.query.filter_by(email=new_email).first():
+            return False
+        self.email=new_email
+        db.session.add(self)
+        return True
+        
+        
+
     def __repr__(self):
         '''返回字符串描述'''
         return '<User %s>'%self.username

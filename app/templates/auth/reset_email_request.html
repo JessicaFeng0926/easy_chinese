@@ -1,0 +1,21 @@
+{%extends 'base.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+
+{%block head%}
+{{super()}}
+<style>
+#wrapper-form{
+    margin-bottom: 220px;
+}
+</style>
+{%endblock head%}
+{%block mytitle%}Reset Email{%endblock mytitle%}
+
+{%block page_content%}
+<div class='page-header'>
+    <h1>Reset Email</h1>
+</div>
+<div class='col-sm-12 col-md-12' id='wrapper-form'>
+    {{wtf.quick_form(form)}}
+</div>
+{%endblock page_content%}
