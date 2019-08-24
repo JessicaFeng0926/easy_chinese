@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField,PasswordField,SelectField,SubmitField
+from wtforms import StringField,PasswordField,SelectField,SubmitField,FileField
 from wtforms.validators import Email,Required,Length,EqualTo,Regexp
-from wtforms.widgets import Input,html_params
 from ..models import User
 from wtforms import ValidationError
 from tools.ectimezones import ectimezone_list
@@ -59,3 +58,7 @@ class ResetEmailRequestForm(FlaskForm):
         '''对新邮箱的进一步验证，不能被别人占用了'''
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('This email has been used.')
+
+
+    
+    

@@ -1,5 +1,6 @@
 import os
 
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config():
     '''基本配置'''
@@ -14,6 +15,8 @@ class Config():
     EC_MAIL_SENDER = os.environ.get('MAIL_USERNAME')
     #本站管理员
     EC_ADMIN = os.environ.get('EC_ADMIN')
+    #头像上传的路径
+    UPLOAD_FOLDER = os.path.abspath(os.path.join(basedir,'app/static/media'))
 
     @staticmethod
     def init_app(app):

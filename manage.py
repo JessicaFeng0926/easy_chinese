@@ -13,7 +13,7 @@ manager=Manager(app)
 migrate=Migrate(app,db)
 
 def make_shell_context():
-    return dict(db=db,Role=Role,User=User)
+    return dict(app=app,db=db,Role=Role,User=User)
 
 #以后就不需要往shell里导入db了
 manager.add_command('shell',Shell(make_context=make_shell_context))

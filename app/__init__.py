@@ -38,6 +38,9 @@ def create_app(config_name):
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint,url_prefix='/auth')
 
+    from .visitor import visitor as visitor_blueprint
+    app.register_blueprint(visitor_blueprint,url_prefix='/visitor')
+
     return app
 
 

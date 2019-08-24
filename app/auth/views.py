@@ -140,3 +140,4 @@ def reset_email(token):
     else:
         flash('Your token is wrong or out of time.')
     return redirect(url_for('main.index'))
+

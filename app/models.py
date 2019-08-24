@@ -4,7 +4,9 @@ from flask_login import UserMixin,AnonymousUserMixin
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
-
+from werkzeug.utils import secure_filename
+import random
+from wtforms import ValidationError
 
 class Role(db.Model):
     '''这是用户角色的模型类'''
@@ -218,6 +220,28 @@ class User(UserMixin,db.Model):
         self.email=new_email
         db.session.add(self)
         return True
+
+    @staticmethod
+    def validate_image(filename):
+        '''这是对头像的进一步验证，主要是保证文件名合法，并且唯一'''  
+        ALLOWED_EXTENSIONS=['jpg','jpeg','png','gif']
+        #文件是否是图片
+        if '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
+            #把文件名变成安全的格式，防止xss攻击
+            filename=secure_filename(filename)
+            #查看文件名是否跟数据库里已经存在的重复了
+            if User.query.filter_by(image=filename).first():
+                random.seed()
+                random_source='QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890'
+                random_prefix=''
+                #生成一个长度为6的随机前缀
+                for _ in range(6):
+                    random_prefix+=random.choice(random_source)
+                #把这个随机前缀加到已经是安全格式的文件名前面
+                filename=random_prefix+filename
+            return filename
+        else:
+            raise ValidationError('You can only upload jpg, jpeg, png and gif')
         
         
 
