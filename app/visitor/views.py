@@ -1,5 +1,5 @@
 from . import visitor
-from flask import render_template,url_for,current_app,request,flash,redirect
+from flask import render_template,url_for,current_app,request,flash,redirect,jsonify
 from flask_login import current_user,login_required
 from . forms import PersonalInfoForm
 import os
@@ -8,9 +8,9 @@ from ..models import User
 
 
 #游客个人信息路由和视图
-@visitor.route('/personal_info/<username>',methods=['GET','POST'])
+@visitor.route('/personal_info',methods=['GET','POST'])
 @login_required
-def personal_info(username):
+def personal_info():
     '''这是修改个人信息的视图'''
     form = PersonalInfoForm()
     if form.validate_on_submit():
@@ -38,4 +38,19 @@ def personal_info(username):
     form.member_since.data=current_user.member_since.strftime('%Y-%m-%d')
     form.timezone.data=current_user.timezone
     return render_template('visitor/personal_info.html',form=form)
+
+#游客预订试听课
+@visitor.route('/trial/<username>',methods=['GET','POST'])
+@login_required
+def trial(username):
+    '''
+    游客预订试听课的视图
+
+    :参数 username:要订课的老师的用户名
+    '''
+    sid = request.form.get('sid',0,type=int)
+    if sid :
+        result = sid + 1
+        return jsonify({'status':'ok','msg':result})
+    return render_template('visitor/trial.html')
 

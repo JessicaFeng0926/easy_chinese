@@ -1,0 +1,26 @@
+{%extends 'student/homepage.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+{%block head %}
+{{super()}}
+<style>
+#user-image{
+    width:200px;
+    height:200px;
+}
+</style>
+{%endblock head%}
+
+{%block mytitle %}Personal Information{%endblock mytitle%}
+
+{%block main%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <div class='panel panel-default'>
+        <div class='panel-body'>
+            <div>
+            <img {%if current_user.image%}src="{{url_for('static',filename='media/'+current_user.image)}}"{%else%}src="{{url_for('static',filename='img/noimage.jpg')}}"{%endif%} class='img-thumbnail' id='user-image'>
+            </div>
+            {{wtf.quick_form(form)}}
+        </div>
+    </div>
+</div>
+{%endblock main%}

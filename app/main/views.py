@@ -6,9 +6,9 @@ from flask_login import login_required,current_user
 def index():
     return render_template('index.html')
 
-@main.route('/personal_center/<username>')
+@main.route('/personal_center')
 @login_required
-def personal_center(username):
+def personal_center():
     '''这是个人中心的视图，不同角色会显示不同的页面'''
     if current_user.role.name == 'Visitor':
         return render_template('visitor/homepage.html')

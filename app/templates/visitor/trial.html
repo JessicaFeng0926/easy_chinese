@@ -1,0 +1,129 @@
+{%extends 'base.html'%}
+{%block mytitle%}Book a Trial{%endblock mytitle%}
+{%block head%}
+{{super()}}
+
+<style>
+footer{
+    display: none;
+}
+.table{
+    width:729.6px;
+}
+h3{
+    margin-bottom:20px;
+}
+
+.available{
+    background-color:#5cb85c;
+}
+
+.booked{
+    background-color:#d9534f;
+}
+
+.rest{
+    background-color: white;
+}
+
+.selected{
+    background-color: #777777;
+}
+
+.legend{
+    display:inline-block;
+    width:40px;
+    height:20px;
+    border:1px solid #efefef;
+}
+
+.legend-info{
+    font-size: 16px;
+}
+</style>
+{%endblock head%}
+
+{%block page_content%}
+<div class='page-header'>
+    <h1>Book a trial</h1>
+
+</div>
+<div class="col-sm-5 col-md-3">
+        <div class="thumbnail">
+          <img src="{{url_for('static',filename='img/teacher3.jpg')}}" >
+          <div class="caption">
+            <h3 class='text-center'>Stacey</h3>
+          </div>
+        </div>
+</div>
+<div class='col-sm-6 col-md-8'>
+    <h3 class='text-center'>August , 2019</h3>
+    <h4>
+        <span class='legend available'></span>
+        <span class='legend-info'>available</span>
+        <span class='legend booked'></span>
+        <span class='legend-info'>booked</span>
+        <span class='legend rest'></span>
+        <span class='legend-info'>rest</span>
+        <span class='legend selected'></span>
+        <span class='legend-info'>selected</span>
+    
+    </h4>
+    <table class='table'>
+        <tr>
+            <th class='col-md-2 col-sm-1 col-xs-2 text-right'></th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>Sunday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>Monday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>Tuesday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>Wednesday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>Thursday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>Friday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>Saturday</th>
+        </tr>
+        <tr>
+            <th class='col-md-2 col-sm-2 col-xs-2 text-right'></th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>28</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>29</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>30</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>31</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>1</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>2</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>3</th>
+        </tr>
+    </table>
+    <table class='table table-bordered'>
+        {% for i in range(24)%}
+        <tr>
+            <td class='col-md-2 col-sm-2 col-xs-2 text-center'>{{i}}:00-{{i}}:50</td>
+            <td class='col-md-1 col-sm-1 col-xs-1' id="0-{{i}}"></td>
+            <td {%if '1-%s'|format(i) in ['1-8','1-9'] %} class='col-md-1 col-sm-1 col-xs-1 available'{%else%}class='col-md-1 col-sm-1 col-xs-1'{%endif%} id="1-{{i}}"></td>
+            <td class='col-md-1 col-sm-1 col-xs-1' id="2-{{i}}"></td>
+            <td {%if '3-%s'|format(i) in ['3-10','3-14']%} class='col-md-1 col-sm-1 col-xs-1 booked'{%else%} class='col-md-1 col-sm-1 col-xs-1' {%endif%} id="3-{{i}}"></td>
+            <td class='col-md-1 col-sm-1 col-xs-1' id="4-{{i}}"></td>
+            <td class='col-md-1 col-sm-1 col-xs-1' id="5-{{i}}"></td>
+            <td class='col-md-1 col-sm-1 col-xs-1' id="6-{{i}}"></td>
+        </tr>
+        {%endfor%}
+
+    </table>
+    <div class="form-group">
+        <label for="message" class="control-label">What do you want to tell your teacher?</label>
+        <textarea class='form-control' name="message" id="message" rows="5" placeholder="A message about your level and your learning goal is welcome"></textarea>
+    </div>
+    <div class='form-group text-right'>
+    <button class='btn btn-default' type='button'>Submit</button>
+    </div>
+    
+
+</div>
+{%endblock page_content%}
+
+{%block scripts%}
+{{super()}}
+
+<script>
+$(function(){
+  
+})
+</script>
+{%endblock scripts%}
