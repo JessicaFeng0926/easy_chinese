@@ -103,6 +103,10 @@ class User(UserMixin,db.Model):
     image = db.Column(db.String(128),unique=True)
     #绑定外键，用户角色
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
+    #声明和工作时间表的一对一关系
+    work_time = db.relationship('WorkTime',backref='teacher',lazy='dynamic')
+    #逻辑删除
+    is_delete = db.Column(db.Boolean,default=False)
 
     def __init__(self,**kwargs):
         '''这是初始化方法'''
@@ -267,4 +271,16 @@ def load_user(user_id):
     按照规定它必须接受用户id作为参数,
     并返回用户对象本身'''
     return User.query.get(int(user_id))
+
+class WorkTime(db.Model):
+    '''这是老师的以星期为单位的常规工作时间的模型类'''
+    __tablename__ = 'worktime'
+    id=db.Column(db.Integer,primary_key=True)
+    teacher_id=db.Column(db.Integer,db.ForeignKey('users.id'))
+    work_time=db.Column(db.String(512))
+
+    def __repr__(self):
+        '''返回的字符串描述'''
+        return '<WorkTime %s>'%(self.teacher.username)
+
 

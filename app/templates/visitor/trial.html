@@ -81,27 +81,21 @@ h3{
             <th class='col-md-1 col-sm-1 col-xs-1 text-center'>Saturday</th>
         </tr>
         <tr>
+            
             <th class='col-md-2 col-sm-2 col-xs-2 text-right'></th>
-            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>28</th>
-            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>29</th>
-            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>30</th>
-            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>31</th>
-            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>1</th>
-            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>2</th>
-            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>3</th>
+            {% for date in only_dates%}
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>{%if date != 0%}{{date}}{%endif%}</th>
+            {%endfor%}
         </tr>
     </table>
     <table class='table table-bordered'>
-        {% for i in range(24)%}
+        {% for hour in range(24)%}
         <tr>
-            <td class='col-md-2 col-sm-2 col-xs-2 text-center'>{{i}}:00-{{i}}:50</td>
-            <td class='col-md-1 col-sm-1 col-xs-1' id="0-{{i}}"></td>
-            <td {%if '1-%s'|format(i) in ['1-8','1-9'] %} class='col-md-1 col-sm-1 col-xs-1 available'{%else%}class='col-md-1 col-sm-1 col-xs-1'{%endif%} id="1-{{i}}"></td>
-            <td class='col-md-1 col-sm-1 col-xs-1' id="2-{{i}}"></td>
-            <td {%if '3-%s'|format(i) in ['3-10','3-14']%} class='col-md-1 col-sm-1 col-xs-1 booked'{%else%} class='col-md-1 col-sm-1 col-xs-1' {%endif%} id="3-{{i}}"></td>
-            <td class='col-md-1 col-sm-1 col-xs-1' id="4-{{i}}"></td>
-            <td class='col-md-1 col-sm-1 col-xs-1' id="5-{{i}}"></td>
-            <td class='col-md-1 col-sm-1 col-xs-1' id="6-{{i}}"></td>
+            
+            <td class='col-md-2 col-sm-2 col-xs-2 text-center'>{{hour}}:00-{{hour}}:50</td>
+            {% for date in this_week%}
+            <td {% if '%s-%s'|format(date,hour) in new_worktime_list %} class='col-md-1 col-sm-1 col-xs-1 available'{%else%}class='col-md-1 col-sm-1 col-xs-1'{%endif%} id="{{'%s-%s'|format(date,hour)}}"></td>
+            {% endfor %}
         </tr>
         {%endfor%}
 
