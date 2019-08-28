@@ -6,8 +6,8 @@ import os
 from .. import db
 from ..models import User
 from pytz import country_timezones,timezone
-from datetime import datetime
-from calendar import monthcalendar
+from datetime import datetime,timedelta
+from calendar import monthcalendar,monthrange
 
 
 #游客个人信息路由和视图
@@ -58,60 +58,83 @@ def trial(username):
         worktime_list = worktime.split(';')
 
         #把以星期为单位的老师工作时间转化为以UTC的年月日小时为单位的工作时间
-        #第一步：找出UTC的此时此刻的年月日
-        utc = timezone('UTC')
-        utc_today = datetime.today().astimezone(utc)
-        utc_year = utc_today.year
-        utc_month = utc_today.month
-        utc_day = utc_today.day
-        #第二步：找出UTC的本周（这是一个较长的星期，前后各扩展一天，这是为了防止游客的时间和老师相差一天）
-        utc_month_calendar = monthcalendar(utc_year,utc_month)
-        for i,week in enumerate(utc_month_calendar):
-            if utc_day in week:
-                utc_this_week = week
-                break
-        utc_this_week = utc_month_calendar[i-1][5:7]+utc_this_week
-        #第三步：把本周列表里的每个元素都换成包含年月日的datetime对象，时区是UTC
-        for i,date in enumerate(utc_this_week):
-            if date !=0:
-                utc_this_week[i]=datetime(utc_year,utc_month,date,tzinfo=utc)
-        if utc_this_week[-1] == 0:
-            zero_num = utc_this_week.count(0)
-            utc_next_month = utc_month + 1
-            if utc_month == 12:
-                utc_next_month = 1
-                utc_year = utc_year + 1
-            for i in range(zero_num):
-                utc_this_week[9-zero_num+i] = datetime(utc_year,utc_next_month,i+1,tzinfo=utc)
+        #把以星期为单位的老师工作时间转化为以UTC的年月日小时为单位的工作时间
+        #第一步：找出UTC的此时此刻
+        utc=timezone('UTC')
+        utcnow = datetime.utcnow()
+        utcnow=datetime(utcnow.year,utcnow.month,utcnow.day,utcnow.hour,utcnow.minute,utcnow.second,utcnow.microsecond,tzinfo=utc)
+        #第二步：计算出可以选课的起始时间，也就是utcnow的24小时后，和截止时间，也就是utcnow的29天后
+        available_start = utcnow + timedelta(1)
+        available_end = utcnow + timedelta(29)
+        #第三步：找出可以选课的起始日期和截止日期是星期几
+        available_start_weekday = available_start.weekday()
+        available_end_weekday = available_end.weekday()
+        #第四步：找出可以选课的起始时期和截止日期所在的月份的最大日期
+        start_monthrange=monthrange(available_start.year,available_start.month)[1]
+        end_monthrange=monthrange(available_end.year,available_end.month)[1]
+        #第五步：构造出可以选课的28天的日期列表，元素是datetime对象，时区是UTC
 
-        #第四步：根据老师的工作时间，生成一个新的列表，列表里的每项都是包含年月日小时的datetime对象，时区是UTC
+        available_time_list=[]
+        if available_start.month == available_end.month:
+            for i in range(29):
+                available_time_list.append(datetime(available_start.year,available_start.month,available_start.day+i,tzinfo=utc))
+        elif available_start.month+1 == available_end.month or available_start.year+1 == available_end.year+1:
+            for i in range(start_monthrange-available_start.day+1):
+                available_time_list.append(datetime(available_start.year,available_start.month,available_start.day+i,tzinfo=utc))
+            for i in range(29-(start_monthrange-available_start.day+1)):
+                available_time_list.append(datetime(available_end.year,available_end.month,i+1,tzinfo=utc))    
+        #第六步：把刚才得到的长列表分成4个或5个星期，不足一星期的就补零处理，然后把列表里的每个元素都根据教师的工作时间变成精确到小时的datetime对象，UTC时区
         new_worktime_list=[]
-        for i in worktime_list:
-            new_worktime_list.append(datetime(utc_this_week[int(i[0])+1].year,utc_this_week[int(i[0])+1].month,utc_this_week[int(i[0])+1].day,int(i[2:]),tzinfo=utc))
-            if int(i[0]) == 6:
-                new_worktime_list.append(datetime(utc_this_week[0].year,utc_this_week[0].month,utc_this_week[0].day,int(i[2:]),tzinfo=utc))
-            elif int(i[0]) == 0:
-                new_worktime_list.append(datetime(utc_this_week[-1].year,utc_this_week[-1].month,utc_this_week[-1].day,int(i[2:]),tzinfo=utc)) 
-
-
+        if available_start_weekday == 6:
+            for i in range(4):
+                for w in worktime_list:
+                    date=available_time_list[7*i:7*i+7][int(w[0])]
+                    time= datetime(date.year,date.month,date.day,int(w[2:]),tzinfo=utc)
+                    #如果这个时间早于允许选课的开始时间或者大于允许选课的截止时间，就不添加到列表里
+                    if time<available_start or time>available_end:
+                        continue
+                    new_worktime_list.append(time)
+        else:
+            #前后补零，总共补的0的个数是7
+            available_time_list=[0]*(available_start_weekday+1)+available_time_list+[0]*(7-available_start_weekday-1)
+            for i in range(5):
+                for w in worktime_list:
+                    date=available_time_list[7*i:7*i+7][int(w[0])]
+                    #如果取出来的不是日期对象，而是我们补的0，就跳过
+                    if date == 0:
+                        continue
+                    time = datetime(date.year,date.month,date.day,int(w[2:]),tzinfo=utc)
+                    if time<available_start or time>available_end:
+                        continue
+                    new_worktime_list.append(time)
+        #第七步：把教师的特殊休息时间从列表中去除
+        special_rest_list = []
+        for data in teacher.special_rest.all():
+            special_rest_list.append(datetime(data.rest_time.year,data.rest_time.month,data.rest_time.day,data.rest_time.hour,tzinfo=utc))
+        for i in new_worktime_list[:]:
+            if i in special_rest_list:
+                new_worktime_list.remove(i)
+        #第八步：把教师的补班时间加到列表里
+        makeup_time_list=[]
+        for data in teacher.make_up_time.all():
+            makeup_time_list.append(datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc))
+        new_worktime_list+=makeup_time_list
+        
         #计算出游客的时区
         visitor_country=current_user.timezone
         if len(visitor_country)>2:
             visitor_tz = country_timezones[visitor_country[:2]][int(visitor_country[-1])]
         else:
-            visitor_tz = country_timezones[visitor_country]
+            visitor_tz = country_timezones[visitor_country][0]
         tz_obj = timezone(visitor_tz)
-
-        #根据时区，生成游客的本周日历
+        
+        #根据时区，生成游客的本周日历（本周的含义是包含选课的起始时间的那一周）
         #生成游客当地的当日日期
-        visitor_today = datetime.today().astimezone(tz_obj)    
-        visitor_year = visitor_today.year
-        visitor_month = visitor_today.month
-        visitor_day = visitor_today.day
-        #游客的当月日历
-        month_calendar = monthcalendar(visitor_year,visitor_month)
+        visitor_start = datetime(available_start.year,available_start.month,available_start.day,tzinfo=tz_obj)
+        #游客的当月日历 
+        month_calendar = monthcalendar(visitor_start.year,visitor_start.month)
         for i,week in enumerate(month_calendar):
-            if visitor_day in week:
+            if visitor_start.day in week:
                 this_week = week
                 break
         #拼接出游客的“当周”，以星期天作为第一天
@@ -119,22 +142,35 @@ def trial(username):
         only_dates=[]
         for i,date in enumerate(this_week):
             if date != 0:
-                this_week[i] = "%s-%s-%s"%(visitor_year,visitor_month,date)
+                this_week[i] = "%s-%s-%s"%(visitor_start.year,visitor_start.month,date)
                 only_dates.append(date)
         #如果当周末尾有0，就要把那些0替换成下个月的1,2,3……
         if this_week[-1] == 0:
             zero_num=this_week.count(0)
-            next_month = visitor_month + 1
-            if visitor_month == 12:
+            next_month = visitor_start.month + 1
+            visitor_year = visitor_start.year
+            if visitor_start.month == 12:
                 next_month = 1
-                visitor_year = visitor_year+1
+                visitor_year = visitor_start.year+1
             for i in range(zero_num):
-                this_week[7-zero_num+i] == '%s-%s-%s'%(visitor_year,next_month,i+1)
+                this_week[7-zero_num+i] = '%s-%s-%s'%(visitor_year,next_month,i+1)
                 only_dates.append(i+1)
+        #如果当周的开头有0，就要把那些0替换成上个月的最后几个日期
+        if this_week[0] == 0:
+            zero_num=this_week.count(0)
+            last_month=visitor_start.month -1
+            visitor_year = visitor_start.year
+            if visitor_start.month == 1:
+                last_month = 12
+                visitor_year = visitor_start.year-1
+            last_month_range=monthrange(visitor_year,last_month)[1]
+            for i in range(zero_num):
+                this_week[i] = '%s-%s-%s-%s'%(visitor_year,last_month,last_month_range-zero_num+i+1)
+                only_dates.insert(i,last_month_range-zero_num+i+1)
         #把老师的工作时间列表换成游客时区的时间(字符串)
         for i,time in enumerate(new_worktime_list):
             time=time.astimezone(tz_obj)
             new_worktime_list[i]='%s-%s-%s-%s'%(time.year,time.month,time.day,time.hour)
-
+        
     return render_template('visitor/trial.html',this_week=this_week,new_worktime_list=new_worktime_list,only_dates=only_dates)
 

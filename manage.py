@@ -2,7 +2,7 @@ from app import create_app,db
 from flask_script import Manager,Shell
 from flask_migrate import Migrate,MigrateCommand
 import os
-from app.models import Role,User,WorkTime
+from app.models import Role,User,WorkTime,SpecialRest,MakeUpTime
 
 
 #创建app
@@ -13,7 +13,7 @@ manager=Manager(app)
 migrate=Migrate(app,db)
 
 def make_shell_context():
-    return dict(app=app,db=db,Role=Role,User=User,WorkTime=WorkTime)
+    return dict(app=app,db=db,Role=Role,User=User,WorkTime=WorkTime,SpecialRest=SpecialRest,MakeUpTime=MakeUpTime)
 
 #以后就不需要往shell里导入db了
 manager.add_command('shell',Shell(make_context=make_shell_context))

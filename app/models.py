@@ -105,6 +105,10 @@ class User(UserMixin,db.Model):
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
     #声明和工作时间表的一对一关系
     work_time = db.relationship('WorkTime',backref='teacher',lazy='dynamic')
+    #声明和特殊休息时间表的一对多关系
+    special_rest = db.relationship('SpecialRest',backref='teacher',lazy='dynamic')
+    #声明和补班时间表的一对多关系
+    make_up_time = db.relationship('MakeUpTime',backref='teacher',lazy='dynamic')
     #逻辑删除
     is_delete = db.Column(db.Boolean,default=False)
 
@@ -282,5 +286,36 @@ class WorkTime(db.Model):
     def __repr__(self):
         '''返回的字符串描述'''
         return '<WorkTime %s>'%(self.teacher.username)
+
+class SpecialRest(db.Model):
+    '''这是老师的特殊休息时间，以年月日小时为单位'''
+    __tablename__ = 'specialrest'
+    id = db.Column(db.Integer,primary_key = True)
+    teacher_id = db.Column(db.Integer,db.ForeignKey('users.id'))
+    #这个字段保存具体的特殊休息时间，保存的是datetime对象
+    rest_time = db.Column(db.DateTime)
+    type = db.Column(db.String(8))
+    #这个字段是是否过期，如果某次请假已经是过去的事情了，就不需要再查询这个数据
+    expire = db.Column(db.Boolean,default=False)
+
+    def __repr__(self):
+        '''返回的字符串描述'''
+        return "<SpecialRest %s>"%(self.teacher.username)
+
+class MakeUpTime(db.Model):
+    '''这是老师的补班时间，以年月日小时为单位'''
+    __tablename__ = 'makeuptime'
+    id = db.Column(db.Integer,primary_key=True)
+    teacher_id = db.Column(db.Integer,db.ForeignKey('users.id'))
+    #这个字段保存具体的补班时间，保存的是datetime对象
+    make_up_time = db.Column(db.DateTime)
+    #这个字段是是否过期，如果某次补班已经是过去的事情了，就不需要再查询这个数据
+    expire = db.Column(db.Boolean,default=False)
+
+    def __repr__(self):
+        '''返回的字符串描述'''
+        return "<MakeUpTime %s>"%(slef.teacher.username)
+
+
 
 
