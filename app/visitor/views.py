@@ -30,7 +30,7 @@ def personal_info():
                 user.image=cleaned_filename
         db.session.add(user)
         flash('Successfully modified your personal information')
-        return redirect(url_for('visitor.personal_info',username=current_user.username))
+        return redirect(url_for('visitor.personal_info'))
 
 
     form.image.data=current_user.image

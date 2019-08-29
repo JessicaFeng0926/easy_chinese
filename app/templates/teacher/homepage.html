@@ -1,0 +1,54 @@
+{% extends 'base.html'%}
+{%block head%}
+{{super()}}
+<style>
+#main{
+    margin-bottom: 300px;
+}
+</style>
+{%endblock head%}
+{%block mytitle%}Personal Center{%endblock mytitle%}
+
+{%block page_content%}
+<div class='page-header'>
+    <h1>Personal Center</h1>
+</div>
+<div class='col-sm-3 col-md-3' >
+    <ul class='nav nav-pills nav-stacked'>
+        <li role="presentation" {%if request.path[:11] == '/personal_c' %}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">My Lessons</a></li>
+        <li role="presentation"><a href="#">My Students</a></li>
+        <li role="presentation" {%if request.path[:10] == '/teacher/p'%}class='active'{%endif%}><a href="{{url_for('teacher.personal_info')}}">Personal Information</a></li>    
+    </ul>
+</div>
+{%block main%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <div class='panel panel-default'>
+        <table class='table'>
+            <tr>
+                <th>Student</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Student's Comment</th>
+            </tr>
+            <tr>
+                <td><a href='#'>nam</a></td>
+                <td>2019-9-26 8:00</td>
+                <td>Not started</td>
+                <td>Regular</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><a href='#'>nam</a></td>
+                <td>2019-7-28 8:00</td>
+                <td>Completed</td>
+                <td>Trial</td>
+                <td>I really enjoyed this lesson with Monica.See you next time!</td>   
+            </tr>
+            
+
+        </table>
+    </div>
+</div>
+{%endblock main%}
+{%endblock page_content%}

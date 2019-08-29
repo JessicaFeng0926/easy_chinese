@@ -15,9 +15,9 @@
 </div>
 <div class='col-sm-3 col-md-3' >
     <ul class='nav nav-pills nav-stacked'>
-        <li role="presentation" {%if request.path[:11] == '/personal_c' %}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">Trial lesson record</a></li>
-        <li role="presentation" {%if request.path[:10] == '/student/p'%}class='active'{%endif%}><a href="{{url_for('student.personal_info')}}">Personal Information</a></li>
+        <li role="presentation" {%if request.path[:11] == '/personal_c' %}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">My Lessons</a></li>
         <li role="presentation"><a href="#">Book a lesson</a></li>
+        <li role="presentation" {%if request.path[:10] == '/student/p'%}class='active'{%endif%}><a href="{{url_for('student.personal_info')}}">Personal Information</a></li>    
     </ul>
 </div>
 {%block main%}
@@ -33,7 +33,14 @@
             </tr>
             <tr>
                 <td><a href='#'>Monica</a></td>
-                <td>2019-7-28</td>
+                <td>2019-9-26 8:00</td>
+                <td>Not started</td>
+                <td></td>
+                <td><span>[Cancel]</span></td>
+            </tr>
+            <tr>
+                <td><a href='#'>Monica</a></td>
+                <td>2019-7-28 8:00</td>
                 <td>Completed</td>
                 <td>Nam did a good job.His knowledge about Chinese culture is so impressive.</td>
                 <td>4</td>

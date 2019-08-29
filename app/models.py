@@ -237,6 +237,10 @@ class User(UserMixin,db.Model):
         if '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
             #把文件名变成安全的格式，防止xss攻击
             filename=secure_filename(filename)
+            #secure_filename函数在中文处理方面有一个bug，只要是中文的文件名，它就会删除所有中文以及标记后缀的点
+            #所以下面的判断和处理是为了解决这个bug，对于中文文件名，都先换成x.jpg的模式，然后再往前加一个随机的六位前缀
+            if '.' not in filename:
+                filename='x.'+filename
             #查看文件名是否跟数据库里已经存在的重复了
             if User.query.filter_by(image=filename).first():
                 random.seed()
