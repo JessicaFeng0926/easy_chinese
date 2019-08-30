@@ -1,0 +1,56 @@
+{% extends 'teacher/homepage.html'%}
+
+{%block head%}
+{{super()}}
+<style>
+footer{
+    margin-top: 200px;
+}
+</style>
+{%endblock head%}
+
+{%block mytitle%}My Students{%endblock mytitle%}
+
+{%block main%}
+
+
+<div class='col-sm-8 col-md-8' id='main'>
+{%if username%}
+<ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="#">Lessons</a></li>
+        <li role="presentation"><a href="#">Profile</a></li>
+    </ul>
+    <div>
+    
+    </div>
+{%else%}
+    <div class='panel panel-default'>
+        <table class='table'>
+            <tr>
+                <th>Student</th>
+                <th>Last seen</th>
+                <th>Lesson Type</th>
+                <th>Class Hours</th>
+                <th>Remaining Hours</th>
+            </tr>
+            <tr>
+                <td><a href="{{url_for('teacher.my_students',tab='lessons',username='nam')}}">nam</a></td>
+                <td>2019-8-30 11:00</td>
+                <td>Regular</td>
+                <td>20</td>
+                <td>11</td>
+            </tr>
+            <tr>
+                <td><a href='#'>Nicholas</a></td>
+                <td>2019-8-28 9:00</td>
+                <td>Test pre</td>
+                <td>2</td>
+                <td>119</td>
+            </tr>
+        </table>
+    </div>
+    {%endif%}
+</div>
+
+
+{%endblock main%}

@@ -8,6 +8,7 @@ from ..models import User
 from .. import db
 import os
 
+#教师个人信息
 @teacher.route('/personal_info',methods=['GET','POST'])
 @login_required
 def personal_info():
@@ -47,5 +48,11 @@ def personal_info():
     local_member_since = utc_member_since.astimezone(user_tz)
     form.member_since.data = local_member_since.strftime('%Y-%m-%d')
     return render_template('teacher/personal_info.html',form=form)
-    
-    
+
+#我的所有学生
+@teacher.route('my_students')
+@login_required
+def my_students():
+    '''这是我的所有学生的视图'''
+    username = request.args.get('username','',type=str)
+    return render_template('teacher/my_students.html',username=username)
