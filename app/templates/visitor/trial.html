@@ -55,14 +55,20 @@ h3{
         </div>
 </div>
 <div class='col-sm-6 col-md-8'>
-    <h3 class='text-center'>August , 2019</h3>
+    <h3 class='text-center'>{{month_name}} , {{year}}</h3>
+    <nav aria-label="...">
+        <ul class="pager">
+          <li {%if current_page.has_prev%}class="previous"{%else%}class='previous disabled'{%endif%}><a {%if current_page.has_prev%}href="{{url_for('visitor.trial',username='hasayake',page=current_page.prev_num)}}"{%endif%}><span aria-hidden="true">&larr;</span>Previous Week</a></li>
+          <li {%if current_page.has_next %}class="next"{%else%}class='next disabled'{%endif%}><a {%if current_page.has_next %}href="{{url_for('visitor.trial',username='hasayake',page=current_page.next_num)}}"{%endif%}>Next Week <span aria-hidden="true">&rarr;</span></a></li>
+        </ul>
+    </nav>
     <h4>
         <span class='legend available'></span>
         <span class='legend-info'>available</span>
         <span class='legend booked'></span>
         <span class='legend-info'>booked</span>
         <span class='legend rest'></span>
-        <span class='legend-info'>rest or past</span>
+        <span class='legend-info'>unavailable</span>
         <span class='legend selected'></span>
         <span class='legend-info'>selected</span>
     
