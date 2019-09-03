@@ -6,6 +6,16 @@
 footer{
     margin-top: 200px;
 }
+
+ul.nav-tabs{
+    margin-bottom: 20px;
+}
+
+#user-image{
+    width:200px;
+    height:200px;
+
+}
 </style>
 {%endblock head%}
 
@@ -16,13 +26,132 @@ footer{
 
 <div class='col-sm-8 col-md-8' id='main'>
 {%if username%}
+
 <ul class="nav nav-tabs">
-        <li role="presentation" class="active"><a href="#">Lessons</a></li>
-        <li role="presentation"><a href="#">Profile</a></li>
+        <li role="presentation" {%if tab == 'lessons'%}class="active"{%endif%}><a href="{{url_for('teacher.my_students',tab='lessons',username=username)}}">Lessons</a></li>
+        <li role="presentation"{%if tab == 'profile'%}class='active'{%endif%}><a href="{{url_for('teacher.my_students',tab='profile',username=username)}}">Profile</a></li>
     </ul>
-    <div>
-    
+
+    {%if tab =='lessons'%}
+    <div class = 'panel panel-default'>
+        <table class='table'>
+            <tr>
+                <th>Student</th>
+                <th>Teacher</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Details</th>
+            </tr>
+            <tr>
+                <td>nam</td>
+                <td>Monica</td>
+                <td>2019-9-26 8:00</td>
+                <td>Not started</td>
+                <td><a href="#">Click here</a></td>
+            </tr>
+            <tr>
+                <td>nam</td>
+                <td>Monica</td>
+                <td>2019-7-28 8:00</td>
+                <td>Completed</td>
+                <td><a href="#">Click here</a></td>
+            </tr>
+        </table>
     </div>
+    {%elif tab == 'profile'%}
+    <div class='panel panel-default'>
+        <div class='panel-heading text-center'>
+            <strong>基本信息</strong> 
+        </div>
+        <div class='panel-body'>
+            <div class='col-sm-6 col-md-5 col-lg-4'>
+            <img {%if student.image %}src="{{url_for('static',filename='media/'+student.image)}}" {%else%}src="{{url_for('static',filename='img/noimage.jpg')}}" {%endif%}class='img-thumbnail' id='user-image'>
+            </div><!-- end of image -->
+            <div class='col-sm-5 col-md-6 col-lg-7'>
+                <table class='table'>
+                    <tr>
+                        <td><strong>用户名</strong></td>
+                        <td>nam</td>
+                    </tr>
+                    <tr>
+                        <td><strong>姓名</strong></td>
+                        <td>南天令</td>
+                    </tr>
+                    <tr>
+                        <td><strong>邮箱</strong></td>
+                        <td>nam@163.com</td>
+                    </tr>
+                    <tr>
+                        <td><strong>地址</strong></td>
+                        <td>Shanghai,China</td>
+                    </tr>
+                    <tr>
+                        <td><strong>注册时间</strong></td>
+                        <td>1 year ago</td>
+                    </tr>
+                    <tr>
+                        <td><strong>最后一次上课</strong></td>
+                        <td>2 weeks ago</td>
+                    </tr>
+                </table>
+            </div>
+        </div><!-- end of panel body -->
+    </div><!-- end of panel -->
+
+    <div class='panel panel-default'>
+        <div class='panel-heading text-center'>
+            <strong>主管老师的补充信息</strong>
+        </div>
+        <div class='panel-body'>
+            <table class='table'>
+                <tr>
+                    <td><strong>称呼</strong></td>
+                    <td>南先生</td>
+                    <td><strong>性别</strong></td>
+                    <td>男</td>
+                </tr>
+                <tr>
+                    <td><strong>年龄</strong></td>
+                    <td>30多岁</td>
+                    <td><strong>工作情况</strong></td>
+                    <td>机长，在上海的航空公司工作</td>
+                </tr>
+                <tr>
+                    <td><strong>家庭情况</strong></td>
+                    <td>已婚，有妻子，一个儿子，一个女儿</td>
+                    <td><strong>性格特点</strong></td>
+                    <td>开朗健谈，虽然是韩国人，但是性格比较偏欧美，很有礼貌，很爱笑</td>
+                </tr>
+                <tr>
+                    <td><strong>兴趣爱好</strong></td>
+                    <td>非常喜欢健身，饮食也都是配合健身的</td>
+                    <td><strong>禁忌话题</strong></td>
+                    <td>暂时没有发现</td>
+                </tr>
+                <tr>
+                    <td><strong>学习原因</strong></td>
+                    <td>在中国工作，需要和中国人交流</td>
+                    <td><strong>学习目标</strong></td>
+                    <td>能够应对日常对话，并且能够掌握和汽车驾驶相关的中文表达</td>
+                </tr>
+                <tr>
+                    <td><strong>当前水平</strong></td>
+                    <td>初二偏下，能够说一些简单的句子，认识不少基本汉字</td>
+                    <td><strong>学习能力</strong></td>
+                    <td>非常好，理解力很强，善于举一反三</td>
+                </tr>
+                <tr>
+                    <td><strong>是否需要笔记或录音</strong></td>
+                    <td>最好有录音，如果没有录音就发笔记</td>
+                    <td><strong>是否需要作业</strong></td>
+                    <td>可以给作业，但是学生比较忙，不要给太多</td>
+                </tr>
+
+            </table>
+        </div>
+
+    </div>
+    {%endif%}
 {%else%}
     <div class='panel panel-default'>
         <table class='table'>

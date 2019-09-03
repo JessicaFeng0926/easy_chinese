@@ -55,4 +55,13 @@ def personal_info():
 def my_students():
     '''这是我的所有学生的视图'''
     username = request.args.get('username','',type=str)
-    return render_template('teacher/my_students.html',username=username)
+    student = []
+    tab = request.args.get('tab','',type=str)
+    if username:
+        student = User.query.filter_by(username=username).first()
+        if tab == 'lessons':
+            pass
+        elif tab == 'profile':
+            pass
+    return render_template('teacher/my_students.html',username=username,student=student,tab=tab)
+
