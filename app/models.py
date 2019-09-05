@@ -109,6 +109,8 @@ class User(UserMixin,db.Model):
     special_rest = db.relationship('SpecialRest',backref='teacher',lazy='dynamic')
     #声明和补班时间表的一对多关系
     make_up_time = db.relationship('MakeUpTime',backref='teacher',lazy='dynamic')
+    #声明和课程的一对多关系
+    lessons = db.relationship('Lesson',backref='student',lazy='dynamic')
     #逻辑删除
     is_delete = db.Column(db.Boolean,default=False)
 
@@ -320,6 +322,19 @@ class MakeUpTime(db.Model):
         '''返回的字符串描述'''
         return "<MakeUpTime %s>"%(slef.teacher.username)
 
+class Lesson(db.Model):
+    '''这是选课的表'''
+    __tablename__ = 'lessons'
+    id = db.Column(db.Integer,primary_key=True)
+    #学生id是外键，绑定用户表
+    student_id = db.Column(db.Integer,db.ForeignKey('users.id'))
+    #教师id不是外键
+    teacher_id = db.Column(db.Integer)
+    time = db.Column(db.DateTime)
+    timezone = db.Column(db.String(8))
 
+    def __repr__(self):
+        '''返回的描述字符串'''
+        return '<Lesson %s>'%self.student.username
 
 

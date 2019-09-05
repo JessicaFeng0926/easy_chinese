@@ -106,7 +106,7 @@ def trial(username):
                 new_worktime_list.remove(i)
         #第六步：把教师的补班时间加到列表里
         makeup_time_list=[]
-        for data in teacher.make_up_time.all():
+        for data in teacher.make_up_time.filter_by(expire=False).all:
             makeup_time_list.append(datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc))
         new_worktime_list+=makeup_time_list
         
