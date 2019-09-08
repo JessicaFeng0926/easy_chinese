@@ -1,10 +1,14 @@
 from flask import request,render_template,url_for,redirect
 from . import main
 from flask_login import login_required,current_user
+from ..models import User
 
 @main.route('/')
 def index():
-    return render_template('index.html')
+    #把主页需要的教师信息传过去
+    teacher_list=User.query.filter_by(role_id=3).all()[:3]
+    print(teacher_list)
+    return render_template('index.html',teacher_list=teacher_list)
 
 @main.route('/personal_center')
 @login_required

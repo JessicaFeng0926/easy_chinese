@@ -50,37 +50,21 @@
 
 <div class='col-sm-12 col-md-12'>
     <h1 class='text-center'>Our Teachers</h1>
+    
     <div class="row">
+        {%for teacher in teacher_list%}
         <div class="col-sm-6 col-md-4">
           <div class="thumbnail">
-            <img src="{{url_for('static',filename='img/teacher.jpg')}}" alt="...">
+            <img {% if teacher.image %}src="{{url_for('static',filename='media/'+teacher.image)}}" {%else%} src="{{url_for('static',filename='img/noimage.jpg')}}"{%endif%}>
             <div class="caption">
-              <h3>Amanda</h3>
+              <h3>{{teacher.name}}</h3>
               <p>Amanda is an excellent teacher who is really good at making classes funny.</p>
-              <p><a href="#" class="btn btn-default" role="button">More information</a> <a href="#" class="btn btn-primary" role="button">Book a trial</a></p>
+              <p><a href="#" class="btn btn-default" role="button">More information</a> <a href="{{url_for('visitor.trial',username=teacher.username)}}" class="btn btn-primary" role="button">Book a trial</a></p>
             </div>
           </div>
         </div>
-        <div class="col-sm-6 col-md-4">
-                <div class="thumbnail">
-                  <img src="{{url_for('static',filename='img/teacher2.jpg')}}"  class='teacher-photo'>
-                  <div class="caption">
-                    <h3>Monica</h3>
-                    <p>Monica is an excellent teacher who is really good at making classes funny.</p>
-                    <p><a href="#" class="btn btn-default" role="button">More information</a> <a href="#" class="btn btn-primary" role="button">Book a trial</a></p>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail">
-                      <img src="{{url_for('static',filename='img/teacher3.jpg')}}" alt="...">
-                      <div class="caption">
-                        <h3>Stacey</h3>
-                        <p>Stacey is an excellent teacher who is really good at making classes funny.</p>
-                        <p><a href="#" class="btn btn-default" role="button">More information</a> <a href="{{url_for('visitor.trial',username='hasayake')}}" class="btn btn-primary" role="button">Book a trial</a></p>
-                      </div>
-                    </div>
-               </div>
+        {%endfor%}
+        
       <div class='text-right'>
       <a href="#">More teachers</a>
       </div>

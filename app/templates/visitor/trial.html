@@ -12,19 +12,23 @@ h3{
     margin-bottom:20px;
 }
 
-.available{
+.available,.available-s{
     background-color:#5cb85c;
 }
 
-.booked{
+.available:hover{
+    cursor: pointer;
+}
+
+.booked,.booked-s{
     background-color:#d9534f;
 }
 
-.rest{
+.rest,.rest-s{
     background-color: white;
 }
 
-.selected{
+.selected,.selected-s{
     background-color: #777777;
 }
 
@@ -48,9 +52,9 @@ h3{
 </div>
 <div class="col-sm-5 col-md-3">
         <div class="thumbnail">
-          <img src="{{url_for('static',filename='img/teacher3.jpg')}}" >
+          <img {%if teacher.image%}src="{{url_for('static',filename='media/'+teacher.image)}}"{%else%}src="{{url_for('static',filename='img/noimage.jpg')}}"{%endif%} >
           <div class="caption">
-            <h3 class='text-center'>Stacey</h3>
+            <h3 class='text-center'>{%if teacher.name %}{{teacher.name}}{%else%}{{teacher.username}}{%endif%}</h3>
           </div>
         </div>
 </div>
@@ -58,18 +62,18 @@ h3{
     <h3 class='text-center'>{{month_name}} , {{year}}</h3>
     <nav aria-label="...">
         <ul class="pager">
-          <li {%if current_page.has_prev%}class="previous"{%else%}class='previous disabled'{%endif%}><a {%if current_page.has_prev%}href="{{url_for('visitor.trial',username='hasayake',page=current_page.prev_num)}}"{%endif%}><span aria-hidden="true">&larr;</span>Previous Week</a></li>
-          <li {%if current_page.has_next %}class="next"{%else%}class='next disabled'{%endif%}><a {%if current_page.has_next %}href="{{url_for('visitor.trial',username='hasayake',page=current_page.next_num)}}"{%endif%}>Next Week <span aria-hidden="true">&rarr;</span></a></li>
+          <li {%if current_page.has_prev%}class="previous"{%else%}class='previous disabled'{%endif%}><a {%if current_page.has_prev%}href="{{url_for('visitor.trial',username=teacher.username,page=current_page.prev_num)}}"{%endif%}><span aria-hidden="true">&larr;</span>Previous Week</a></li>
+          <li {%if current_page.has_next %}class="next"{%else%}class='next disabled'{%endif%}><a {%if current_page.has_next %}href="{{url_for('visitor.trial',username=teacher.username,page=current_page.next_num)}}"{%endif%}>Next Week <span aria-hidden="true">&rarr;</span></a></li>
         </ul>
     </nav>
     <h4>
-        <span class='legend available'></span>
+        <span class='legend available-s'></span>
         <span class='legend-info'>available</span>
-        <span class='legend booked'></span>
+        <span class='legend booked-s'></span>
         <span class='legend-info'>booked</span>
-        <span class='legend rest'></span>
+        <span class='legend rest-s'></span>
         <span class='legend-info'>unavailable</span>
-        <span class='legend selected'></span>
+        <span class='legend selected-s'></span>
         <span class='legend-info'>selected</span>
     
     </h4>
@@ -88,7 +92,7 @@ h3{
             
             <th class='col-md-2 col-sm-2 col-xs-2 text-right'></th>
             {% for date in only_dates%}
-            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>{%if date != 0%}{{date}}{%endif%}</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>{{date}}</th>
             {%endfor%}
         </tr>
     </table>
@@ -109,7 +113,7 @@ h3{
         <textarea class='form-control' name="message" id="message" rows="5" placeholder="A message about your level and your learning goal is welcome"></textarea>
     </div>
     <div class='form-group text-right'>
-    <button class='btn btn-default' type='button'>Submit</button>
+    <button class='btn btn-default' type='button' id='submit'>Submit</button>
     </div>
     
 
@@ -121,6 +125,31 @@ h3{
 
 <script>
 $(function(){
+    //定义一个变量，上课时间
+    var time = ''
+    var message = ''
+    //下面是获取上课时间的点击事件
+    $('.available').click(function(){
+        if($(this).attr('class')=="col-md-1 col-sm-1 col-xs-1 available"){
+            time=$(this).attr('id')
+            //当一个时间点变成了选中状态的时候，其他被选中的时间点要变成可选状态，保证一次只能选择一个时间点
+            $('.selected').attr('class','col-md-1 col-sm-1 col-xs-1 available');
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 selected');
+        }else{
+            //点击已经选中的时间点，会取消对它的选择
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 available');
+            time=''
+        }
+    })
+    
+    $('#submit').click(function(){
+        message=$('#message').val();
+        console.log(message)
+        if(time=='' || message==''){
+            alert("Time and message are both necessary.")
+        }
+    })
+
   
 })
 </script>
