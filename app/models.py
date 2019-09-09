@@ -331,7 +331,10 @@ class Lesson(db.Model):
     #教师id不是外键
     teacher_id = db.Column(db.Integer)
     time = db.Column(db.DateTime)
+    message = db.Column(db.String(256))
     timezone = db.Column(db.String(8))
+    lesson_type = db.Column(db.String(16))
+    status = db.Column(db.String(16),default='Not started')
 
     def __repr__(self):
         '''返回的描述字符串'''

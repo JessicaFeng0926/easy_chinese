@@ -4,7 +4,7 @@ from flask_login import current_user,login_required
 from . forms import PersonalInfoForm
 import os
 from .. import db
-from ..models import User
+from ..models import User,Lesson
 from pytz import country_timezones,timezone
 from datetime import datetime,timedelta
 import calendar
@@ -104,12 +104,26 @@ def trial(username):
         for i in new_worktime_list[:]:
             if i in special_rest_list:
                 new_worktime_list.remove(i)
-        #第六步：把教师的补班时间加到列表里
+        #第六步：生成一个已预约的课程时间列表,并把这些时间点从老师的工作时间表中去掉
+        lessons = Lesson.query.filter_by(teacher_id = teacher.id).all()
+        #已预约的课程时间列表
+        lessons_list = []
+        for lesson in lessons:
+            time = lesson.time
+            time = datetime(time.year,time.month,time.day,time.hour,tzinfo=utc)
+            #只关心那些在可选时间范围内的课程
+            if time > available_start:
+                lessons_list.append(time)
+        for i in new_worktime_list[:]:
+            if i in lessons_list:
+                new_worktime_list.remove(i)
+        #第七步：把教师的补班时间加到列表里
         makeup_time_list=[]
         for data in teacher.make_up_time.filter_by(expire=False).all():
             makeup_time_list.append(datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc))
         new_worktime_list+=makeup_time_list
         
+
         #计算出游客的时区
         visitor_country=current_user.timezone
         if len(visitor_country)>2:
@@ -159,10 +173,41 @@ def trial(username):
             this_week.append('%s-%s-%s'%(date.year,date.month,date.day))
             only_dates.append(date.day)
         
-        #把老师的工作时间列表换成游客时区的时间(字符串)
+        #把老师的可选的时间列表换成游客时区的时间(字符串)
         for i,time in enumerate(new_worktime_list):
             time=time.astimezone(tz_obj)
             new_worktime_list[i]='%s-%s-%s-%s'%(time.year,time.month,time.day,time.hour)
-        
-    return render_template('visitor/trial.html',this_week=this_week,new_worktime_list=new_worktime_list,only_dates=only_dates,month_name=month_name,year=year,current_page=current_page,teacher=teacher)
+        #把老师有课的时间转换成游客时区的时间（字符串）
+        for i,time in enumerate(lessons_list):
+            time=time.astimezone(tz_obj)
+            lessons_list[i]='%s-%s-%s-%s'%(time.year,time.month,time.day,time.hour)
+
+        #查看并处理选课的ajax请求
+        time = request.form.get('time','',type=str)
+        message = request.form.get('message','',type=str)
+        if time and message:
+            #如果该游客已经有一节试听课记录了，并且那节试听课是完成或者还未开始的状态，不允许他再次选择试听课
+            trial = Lesson.query.filter_by(student_id=current_user.id,lesson_type='Trial').first()
+            if trial:
+                if trial.status == 'Complete' or trial.status == 'Not started':
+                    return jsonify({'status':'fail','msg':"Operation failed.You've already booked a trial lesson."})
+            time = time.split('-')
+            #先构造一个没有时区的datetime对象
+            time = datetime(int(time[0]),int(time[1]),int(time[2]),int(time[3]))
+            #在把它变成时区为游客所在地区的datetime对象
+            time = tz_obj.localize(time)
+            #再把时区变成utc时区
+            time = time.astimezone(utc)
+
+            #再把课程信息存进数据库
+            lesson = Lesson()
+            lesson.student_id = current_user.id
+            lesson.teacher_id = teacher.id
+            lesson.time = time
+            lesson.message = message
+            lesson.timezone = current_user.timezone
+            lesson.lesson_type = 'Trial'
+            db.session.add(lesson)
+            return jsonify({'status':'ok','msg':"You've successfully booked a trial lesson."})
+    return render_template('visitor/trial.html',this_week=this_week,new_worktime_list=new_worktime_list,only_dates=only_dates,month_name=month_name,year=year,current_page=current_page,teacher=teacher,lessons_list=lessons_list)
 

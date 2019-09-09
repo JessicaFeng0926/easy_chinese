@@ -7,7 +7,6 @@ from ..models import User
 def index():
     #把主页需要的教师信息传过去
     teacher_list=User.query.filter_by(role_id=3).all()[:3]
-    print(teacher_list)
     return render_template('index.html',teacher_list=teacher_list)
 
 @main.route('/personal_center')

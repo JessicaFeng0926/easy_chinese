@@ -102,7 +102,7 @@ h3{
             
             <td class='col-md-2 col-sm-2 col-xs-2 text-center'>{{hour}}:00-{{hour}}:50</td>
             {% for date in this_week%}
-            <td {% if '%s-%s'|format(date,hour) in new_worktime_list %} class='col-md-1 col-sm-1 col-xs-1 available'{%else%}class='col-md-1 col-sm-1 col-xs-1'{%endif%} id="{{'%s-%s'|format(date,hour)}}"></td>
+            <td {%if '%s-%s'|format(date,hour) in lessons_list %}class='col-md-1 col-sm-1 col-xs-1 booked'{% elif '%s-%s'|format(date,hour) in new_worktime_list %} class='col-md-1 col-sm-1 col-xs-1 available'{%else%}class='col-md-1 col-sm-1 col-xs-1'{%endif%} id="{{'%s-%s'|format(date,hour)}}"></td>
             {% endfor %}
         </tr>
         {%endfor%}
@@ -145,10 +145,25 @@ $(function(){
     $('#submit').click(function(){
         message=$('#message').val();
         console.log(message)
+        //如果上课时间或者留言为空，弹出警告
         if(time=='' || message==''){
             alert("Time and message are both necessary.")
-        }
-    })
+        }else{ //否则就要提交选课的ajax请求了
+            $.ajax({
+                type:'POST',
+                url:"{{url_for('visitor.trial',username=teacher.username)}}",
+                data:{
+                      time:time,
+                      message:message,
+                },
+                success:function(callback){
+                    alert(callback.msg);
+                    window.location.reload();
+
+                }
+            })//ajax的结尾
+        }//else的结尾
+    })//click的结尾
 
   
 })
