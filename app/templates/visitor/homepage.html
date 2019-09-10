@@ -23,11 +23,33 @@
 {%block main%}
 <div class='col-sm-8 col-md-8' id='main'>
     <div class='panel panel-default'>
-        <div class='panel-body'>
+        {%if trial_lessons%}
+        <table class='table'>
+                <tr>
+                    <th>Teacher</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Teacher's comment</th>
+                </tr>
+                {% for lesson in trial_lessons%}
+                <tr>
+                    <td>{{lesson.teacher.name}}</td>
+                    <td>{{lesson.localtime}}</td>
+                    <td>{{lesson.status}}</td>
+                    <td></td>
+                </tr>
+
+                {%endfor%}
+
+        </table>
+
+        {%else%}
+        <div class='panel-body'> 
             <h3>You haven't taken a trial lesson yet.</h3>
             <h4><a href="#">Book a trial lesson</a></h4>
 
         </div>
+        {%endif%}
     </div>
 </div>
 {%endblock main%}

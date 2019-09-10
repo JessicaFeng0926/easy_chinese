@@ -332,7 +332,6 @@ class Lesson(db.Model):
     teacher_id = db.Column(db.Integer)
     time = db.Column(db.DateTime)
     message = db.Column(db.String(256))
-    timezone = db.Column(db.String(8))
     lesson_type = db.Column(db.String(16))
     status = db.Column(db.String(16),default='Not started')
 

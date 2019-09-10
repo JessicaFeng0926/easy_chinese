@@ -194,7 +194,7 @@ def trial(username):
             time = time.split('-')
             #先构造一个没有时区的datetime对象
             time = datetime(int(time[0]),int(time[1]),int(time[2]),int(time[3]))
-            #在把它变成时区为游客所在地区的datetime对象
+            #再把它变成时区为游客所在地区的datetime对象
             time = tz_obj.localize(time)
             #再把时区变成utc时区
             time = time.astimezone(utc)
@@ -205,7 +205,6 @@ def trial(username):
             lesson.teacher_id = teacher.id
             lesson.time = time
             lesson.message = message
-            lesson.timezone = current_user.timezone
             lesson.lesson_type = 'Trial'
             db.session.add(lesson)
             return jsonify({'status':'ok','msg':"You've successfully booked a trial lesson."})
