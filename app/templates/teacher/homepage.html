@@ -28,27 +28,26 @@
                 <th>Student</th>
                 <th>Time</th>
                 <th>Status</th>
-                <th>Type</th>
+                <th>Lesson Type</th>
                 <th>Student's Comment</th>
             </tr>
+            {%for lesson in lesson_list%}
             <tr>
-                <td><a href='#'>nam</a></td>
-                <td>2019-9-26 8:00</td>
-                <td>Not started</td>
-                <td>Regular</td>
+                <td><a href='#'>{{lesson.student.username}}</a></td>
+                <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
+                <td>{% if moment().valueOf()>moment(testtime).valueOf()%}<a>Record</a>{%else%}Not started{%endif%}</td>
+                <td>{{lesson.lesson_type}}</td>
                 <td></td>
             </tr>
-            <tr>
-                <td><a href='#'>nam</a></td>
-                <td>2019-7-28 8:00</td>
-                <td>Completed</td>
-                <td>Trial</td>
-                <td>I really enjoyed this lesson with Monica.See you next time!</td>   
-            </tr>
-            
+            {%endfor%}
 
         </table>
     </div>
 </div>
 {%endblock main%}
 {%endblock page_content%}
+
+{%block scripts%}
+{{super()}}
+{{moment.include_moment()}}
+{%endblock scripts%}
