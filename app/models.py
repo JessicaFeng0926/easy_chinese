@@ -111,9 +111,11 @@ class User(UserMixin,db.Model):
     make_up_time = db.relationship('MakeUpTime',backref='teacher',lazy='dynamic')
     #声明和课程的一对多关系
     lessons = db.relationship('Lesson',backref='student',lazy='dynamic')
+    #声明和主管学生信息表的一对一关系
+    student_profile = db.relationship('StudentProfile',backref='student',lazy='dynamic')
     #逻辑删除
     is_delete = db.Column(db.Boolean,default=False)
-
+    
     def __init__(self,**kwargs):
         '''这是初始化方法'''
         super(User,self).__init__(**kwargs)
@@ -338,5 +340,32 @@ class Lesson(db.Model):
     def __repr__(self):
         '''返回的描述字符串'''
         return '<Lesson %s>'%self.student.username
+
+class StudentProfile(db.Model):
+    '''这是主管学生信息表的模型类'''
+    __tablename__ = 'student_profiles'
+    id = db.Column(db.Integer,primary_key=True)
+    nickname = db.Column(db.String(64))
+    gender = db.Column(db.String(32))
+    age = db.Column(db.Integer)
+    job = db.Column(db.String(128))
+    family = db.Column(db.String(128))
+    personality = db.Column(db.String(128))
+    hobby = db.Column(db.String(128))
+    taboo = db.Column(db.String(128))
+    reason = db.Column(db.String(128))
+    goal = db.Column(db.String(128))
+    level = db.Column(db.String(128))
+    ability = db.Column(db.String(128))
+    notes = db.Column(db.String(128))
+    homework = db.Column(db.String(128))
+    teacher_id = db.Column(db.Integer)
+    teacher_phone = db.Column(db.String(128))
+    student_id =db.Column(db.Integer,db.ForeignKey("users.id"))
+
+    def __repr__(self):
+        '''返回的字符串'''
+        return '<StudentProfile %s>'%(self.student.username)
+
 
 

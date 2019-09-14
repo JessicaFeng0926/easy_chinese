@@ -8,7 +8,7 @@ from datetime import datetime,timedelta
 @main.route('/')
 def index():
     #把主页需要的教师信息传过去
-    teacher_list=User.query.filter_by(role_id=3).all()[:3]
+    teacher_list=User.query.filter(User.role_id==3,User.name!=None).all()[:3]
     return render_template('index.html',teacher_list=teacher_list)
 
 @main.route('/personal_center')
@@ -67,8 +67,9 @@ def personal_center():
                 localtime = utctime.astimezone(tz)
                 lesson.localtime = localtime
                 lesson_list.append(lesson)
-        testtime=datetime(2019,9,12,18,41,tzinfo=tz)
-        return render_template('teacher/homepage.html',lesson_list=lesson_list,testtime=testtime)
+    
+        
+        return render_template('teacher/homepage.html',lesson_list=lesson_list)
     elif current_user.role.name == 'Moderator':
         return render_template('moderator/homepage.html')
     elif current_user.role.name == 'Administrator':

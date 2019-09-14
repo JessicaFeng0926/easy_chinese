@@ -4,7 +4,7 @@ from . import teacher
 from .forms import PersonalInfoForm
 from pytz import timezone,country_timezones
 from datetime import datetime
-from ..models import User
+from ..models import User,Lesson
 from .. import db
 import os
 
@@ -56,12 +56,28 @@ def my_students():
     '''这是我的所有学生的视图'''
     username = request.args.get('username','',type=str)
     student = []
+    lessons = []
     tab = request.args.get('tab','',type=str)
+    #如果有用户名，就要查看某个学生的信息，否则就查看该教师的所有学生
     if username:
         student = User.query.filter_by(username=username).first()
         if tab == 'lessons':
-            pass
+            lessons = student.lessons.order_by(Lesson.time.asc()).all()
+            tz = current_user.timezone
+            if len(tz) == 2:
+                tz = country_timezones[tz][0]
+            else:
+                tz = country_timezones[tz[:2]][int(tz[3:])]
+            tz = timezone(tz)
+            utc = timezone('UTC')
+            #给每节课添加教师信息，以及根据教师时区转化出的教师当地的上课时间
+            for lesson in lessons:
+                teacher = User.query.get(lesson.teacher_id)
+                lesson.teacher = teacher
+                utctime = datetime(lesson.time.year,lesson.time.month,lesson.time.day,lesson.time.hour,tzinfo=utc)
+                localtime = utctime.astimezone(tz)
+                lesson.localtime = localtime
         elif tab == 'profile':
             pass
-    return render_template('teacher/my_students.html',username=username,student=student,tab=tab)
+    return render_template('teacher/my_students.html',username=username,student=student,tab=tab,lessons=lessons)
 

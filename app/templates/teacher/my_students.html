@@ -42,20 +42,15 @@ ul.nav-tabs{
                 <th>Status</th>
                 <th>Details</th>
             </tr>
+            {%for lesson in lessons%}
             <tr>
-                <td>nam</td>
-                <td>Monica</td>
-                <td>2019-9-26 8:00</td>
-                <td>Not started</td>
-                <td><a href="#">Click here</a></td>
+                <td>{{student.username}}</td>
+                <td>{{lesson.teacher.name}}</td>
+                <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
+                <td>{{lesson.status}}</td>
+                <td>{%if lesson.status == 'Complete' or lesson.status == 'Tea Late'%}<a href="#">Click here</a>{%endif%}</td>
             </tr>
-            <tr>
-                <td>nam</td>
-                <td>Monica</td>
-                <td>2019-7-28 8:00</td>
-                <td>Completed</td>
-                <td><a href="#">Click here</a></td>
-            </tr>
+            {%endfor%}
         </table>
     </div>
     {%elif tab == 'profile'%}

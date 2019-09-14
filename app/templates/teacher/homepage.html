@@ -35,7 +35,7 @@
             <tr>
                 <td><a href='#'>{{lesson.student.username}}</a></td>
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
-                <td>{% if moment().valueOf()>moment(testtime).valueOf()%}<a>Record</a>{%else%}Not started{%endif%}</td>
+                <td>{% if moment().valueOf()>moment(lesson.time).valueOf()%}<a>Record</a>{%else%}Not started{%endif%}</td>
                 <td>{{lesson.lesson_type}}</td>
                 <td></td>
             </tr>
