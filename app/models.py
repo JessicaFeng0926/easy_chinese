@@ -347,7 +347,7 @@ class StudentProfile(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     nickname = db.Column(db.String(64))
     gender = db.Column(db.String(32))
-    age = db.Column(db.Integer)
+    age = db.Column(db.String(32))
     job = db.Column(db.String(128))
     family = db.Column(db.String(128))
     personality = db.Column(db.String(128))

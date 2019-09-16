@@ -4,7 +4,7 @@ from . import teacher
 from .forms import PersonalInfoForm
 from pytz import timezone,country_timezones
 from datetime import datetime
-from ..models import User,Lesson
+from ..models import User,Lesson,StudentProfile
 from .. import db
 import os
 
@@ -57,19 +57,22 @@ def my_students():
     username = request.args.get('username','',type=str)
     student = []
     lessons = []
+    primary_teacher = []
     tab = request.args.get('tab','',type=str)
     #如果有用户名，就要查看某个学生的信息，否则就查看该教师的所有学生
     if username:
         student = User.query.filter_by(username=username).first()
+        tz = current_user.timezone
+        if len(tz) == 2:
+            tz = country_timezones[tz][0]
+        else:
+            tz = country_timezones[tz[:2]][int(tz[3:])]
+        tz = timezone(tz)
+        utc = timezone('UTC')
+        #查看该学生的所有课程
         if tab == 'lessons':
             lessons = student.lessons.order_by(Lesson.time.asc()).all()
-            tz = current_user.timezone
-            if len(tz) == 2:
-                tz = country_timezones[tz][0]
-            else:
-                tz = country_timezones[tz[:2]][int(tz[3:])]
-            tz = timezone(tz)
-            utc = timezone('UTC')
+            
             #给每节课添加教师信息，以及根据教师时区转化出的教师当地的上课时间
             for lesson in lessons:
                 teacher = User.query.get(lesson.teacher_id)
@@ -77,7 +80,18 @@ def my_students():
                 utctime = datetime(lesson.time.year,lesson.time.month,lesson.time.day,lesson.time.hour,tzinfo=utc)
                 localtime = utctime.astimezone(tz)
                 lesson.localtime = localtime
+        #查看该学生的个人信息
         elif tab == 'profile':
-            pass
-    return render_template('teacher/my_students.html',username=username,student=student,tab=tab,lessons=lessons)
-
+            member_since = student.member_since
+            utcsince = datetime(member_since.year,member_since.month,member_since.day,member_since.hour,tzinfo=utc)
+            localsince = utcsince.astimezone(tz)
+            student.localsince = localsince
+            teacher_id = student.student_profile.first().teacher_id
+            primary_teacher = User.query.get(teacher_id)
+        return render_template('teacher/my_students.html',username=username,student=student,tab=tab,lessons=lessons,primary_teacher=primary_teacher)
+    #如果没有用户名，那就查询我的所有学生
+    student_profiles = StudentProfile.query.filter_by(teacher_id=current_user.id).all()
+    students=[]
+    for profile in student_profiles:
+        students.append(profile.student)
+    return render_template('teacher/my_students.html',students=students)
