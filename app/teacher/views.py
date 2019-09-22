@@ -1,7 +1,7 @@
 from flask import render_template,request,current_app,redirect,url_for,flash
 from flask_login import current_user,login_required
 from . import teacher
-from .forms import PersonalInfoForm
+from .forms import PersonalInfoForm,EditProfileForm
 from pytz import timezone,country_timezones
 from datetime import datetime
 from ..models import User,Lesson,StudentProfile
@@ -50,7 +50,7 @@ def personal_info():
     return render_template('teacher/personal_info.html',form=form)
 
 #我的所有学生
-@teacher.route('my_students')
+@teacher.route('/my_students')
 @login_required
 def my_students():
     '''这是我的所有学生的视图'''
@@ -95,3 +95,62 @@ def my_students():
     for profile in student_profiles:
         students.append(profile.student)
     return render_template('teacher/my_students.html',students=students)
+
+#修改主管学生信息
+@teacher.route('/edit_profile/<username>',methods=['GET','POST'])
+@login_required
+def edit_profile(username):
+    '''修改主管学生信息'''
+    student = User.query.filter_by(username=username,role_id=2).first()
+    if student:
+        utc = timezone('UTC')
+        tz = current_user.timezone
+        if len(tz) == 2:
+            tz = country_timezones[tz][0]
+        else:
+            tz = country_timezones[tz[:2]][int(tz[3:])]
+        tz = timezone(tz)
+        member_since = student.member_since
+        utcsince = datetime(member_since.year,member_since.month,member_since.day,member_since.hour,tzinfo=utc)
+        localsince = utcsince.astimezone(tz)
+        student.localsince = localsince
+    student_profile = student.student_profile.first()
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        student_profile.nickname = form.nickname.data
+        student_profile.gender = form.gender.data
+        student_profile.age = form.age.data
+        student_profile.job = form.job.data
+        student_profile.family = form.family.data
+        student_profile.personality = form.personality.data
+        student_profile.hobby = form.hobby.data
+        student_profile.taboo = form.taboo.data
+        student_profile.reason = form.reason.data
+        student_profile.goal = form.goal.data
+        student_profile.level = form.level.data
+        student_profile.ability = form.ability.data
+        student_profile.notes = form.notes.data
+        student_profile.homework = form.homework.data
+        student_profile.teacher_phone = form.teacher_phone.data
+        db.session.add(student_profile)
+        flash("主管学生信息修改成功！")
+        return redirect(url_for('teacher.my_students',username=username,tab='profile'))
+
+    if student_profile:
+        form.nickname.data = student_profile.nickname
+        form.gender.data = student_profile.gender
+        form.age.data = student_profile.age
+        form.job.data = student_profile.job
+        form.family.data = student_profile.family
+        form.personality.data = student_profile.personality
+        form.hobby.data = student_profile.hobby
+        form.taboo.data = student_profile.taboo
+        form.reason.data = student_profile.reason
+        form.goal.data = student_profile.goal
+        form.level.data = student_profile.level
+        form.ability.data = student_profile.ability
+        form.notes.data = student_profile.notes
+        form.homework.data = student_profile.homework
+        form.teacher_phone.data = student_profile.teacher_phone
+
+    return render_template('teacher/edit_profile.html',student=student,form=form)

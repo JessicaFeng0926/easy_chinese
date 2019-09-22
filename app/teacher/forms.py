@@ -13,3 +13,22 @@ class PersonalInfoForm(FlaskForm):
     email=StringField(label='Email',validators=[Required(),Email()],render_kw={'readonly':True})
     member_since=StringField(label='Member since',validators=[Required()],render_kw={'readonly':True})
     submit=SubmitField(label='Submit')
+
+class EditProfileForm(FlaskForm):
+    '''这是主管学生信息的表单'''
+    nickname = StringField(label='称呼',validators=[Length(1,64)],render_kw={'placeholder':'学生喜欢的称呼，如Michael,陈先生等。如果发音比较特殊，也请标注。'})
+    gender = StringField(label='性别',validators=[Length(1,32)])
+    age = StringField(label='年龄',validators=[Length(1,32)])
+    job = StringField(label='工作情况',validators=[Length(1,128)])
+    family = StringField(label='家庭情况',validators=[Length(1,128)])
+    personality = StringField(label='性格特点',validators=[Length(1,128)])
+    hobby = StringField(label='兴趣爱好',validators=[Length(1,128)])
+    taboo = StringField(label='禁忌话题',validators=[Length(1,128)],render_kw={'placeholder':'如学生比较敏感的宗教问题，去世的亲人或离异的父母、伴侣等。'})
+    reason = StringField(label='学习原因',validators=[Length(1,128)])
+    goal = StringField(label='学习目标',validators=[Length(1,128)],render_kw={'placeholder':'请尽量覆盖听说读写等多个方面'})
+    level = StringField(label='当前水平',validators=[Length(1,128)],render_kw={'placeholder':'请尽量覆盖听说读写等多个方面'})
+    ability = StringField(label='学习能力',validators=[Length(1,128)])
+    notes = StringField(label='是否需要笔记或录音',validators=[Length(1,128)])
+    homework = StringField(label='是否需要作业',validators=[Length(1,128)])
+    teacher_phone = StringField(label='主管老师电话',validators=[Length(1,128)])
+    submit = SubmitField(label='修改并提交')

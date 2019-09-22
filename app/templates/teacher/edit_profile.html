@@ -1,0 +1,69 @@
+{%extends 'teacher/homepage.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+
+{%block head%}
+{{super()}}
+<style>
+
+</style>
+{%endblock head%}
+
+{%block mytitle%}Edit Profile{%endblock mytitle%}
+
+{%block main%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <div class='panel panel-default'>
+        <div class='panel-heading text-center'>
+            <strong>基本信息</strong>
+        </div>
+        <div class='panel-body'>
+            <div class='col-sm-6 col-md-5 col-lg-4'>
+                <img {%if student.image %}src="{{url_for('static',filename='media/'+student.image)}}" {%else%}src="{{url_for('static',filename='img/noimage.jpg')}}" {%endif%}class='img-thumbnail' id='user-image'>
+            </div><!-- end of image -->
+            <div class='col-sm-5 col-md-6 col-lg-7'>
+                <table class='table'>
+                    <tr>
+                        <td><strong>用户名</strong></td>
+                        <td>{{student.username}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>姓名</strong></td>
+                        <td>{{student.name}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>邮箱</strong></td>
+                        <td>{{student.email}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>地址</strong></td>
+                        <td>{{student.location}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>课程类型</strong></td>
+                        <td>Regular</td>
+                    </tr>
+                    <tr>
+                        <td><strong>注册时间</strong></td>
+                        <td>{{"%s-%s-%s"|format(student.localsince.year,student.localsince.month,student.localsince.day)}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>最后一次上课</strong></td>
+                        <td>2 weeks ago</td>
+                    </tr>
+                </table>
+            </div><!-- end of other basic information -->
+        </div><!-- end of panel body -->
+    </div> <!-- end of the first panel -->
+
+    <div class ='panel panel-default'>
+        <div class='panel-heading text-center'>
+            <strong>主管老师补充的信息</strong>
+        </div>
+        <div class='panel panel-body'>
+            {{wtf.quick_form(form)}}
+
+        </div>
+    </div>
+</div>
+
+{%endblock main%}

@@ -156,9 +156,11 @@ ul.nav-tabs{
         </div>
 
     </div>
+    {%if current_user.id == primary_teacher.id%}
     <div>
-        <button class='btn btn-default col-lg-offset-9 col-md-offset-9 col-sm-offset-9 col-xs-offset-9'>修改主管学生信息</button>
+        <a class='btn btn-default col-lg-offset-9 col-md-offset-9 col-sm-offset-9 col-xs-offset-9' href="{{url_for('teacher.edit_profile',username=student.username)}}">修改主管学生信息</a>
     </div>
+    {%endif%}
     {%endif%}
 {%else%}
     <div class='panel panel-default'>
@@ -182,7 +184,7 @@ ul.nav-tabs{
         </table>
     </div>
     {%endif%}
-</div>
+</div><!-- end of main -->
 
 
 {%endblock main%}
