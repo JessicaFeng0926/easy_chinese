@@ -43,8 +43,8 @@ def personal_center():
     elif current_user.role.name == 'Teacher':
         #查询出24小时内老师的未开始课程
         lessons = Lesson.query.filter_by(teacher_id = current_user.id,status ='Not started').order_by(Lesson.time.asc()).all()
+        lesson_list = []
         if lessons :
-            lesson_list = []
             utcnow = datetime.utcnow()
             utc = timezone('UTC')
             #获取老师的时区信息（是国家代码和数字的组合,比如CN-0）

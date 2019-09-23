@@ -1,0 +1,39 @@
+{%extends 'teacher/homepage.html' %}
+{% import 'bootstrap/wtf.html' as wtf%}
+
+{%block head%}
+{{super()}}
+<style>
+footer{
+    margin-top:300px;
+}
+</style>
+{%endblock head%}
+
+{%block title%}Record Lesson{%endblock title%}
+
+{%block main%}
+<div class='col-sm-8 col-md-8'>
+    <div class='panel panel-default'>
+        <div class='panel-heading text-center'>
+            <strong>课程详情</strong>
+        </div> 
+        <div class='panel-body'>
+            <table class='table'>
+                <tr>
+                    <th>学生</th>
+                    <th>上课时间</th>
+                    <th>课程类型</th>
+                </tr>
+                <tr>
+                    <td>nam</td>
+                    <td>2019-9-11 9:00</td>
+                    <td>Trial</td>
+                </tr>
+            </table>
+            {{wtf.quick_form(form)}}
+        </div>
+    </div>
+</div>
+
+{%endblock main%}

@@ -336,6 +336,8 @@ class Lesson(db.Model):
     message = db.Column(db.String(256))
     lesson_type = db.Column(db.String(16))
     status = db.Column(db.String(16),default='Not started')
+    #声明和课程详情的一对一关系
+    lesson_record = db.relationship("LessonRecord",backref='lesson',lazy='dynamic')
 
     def __repr__(self):
         '''返回的描述字符串'''
@@ -366,6 +368,29 @@ class StudentProfile(db.Model):
     def __repr__(self):
         '''返回的字符串'''
         return '<StudentProfile %s>'%(self.student.username)
+
+class LessonRecord(db.Model):
+    '''这是课程详情的模型类'''
+    __tablename__ = 'lesson_records'
+    id = db.Column(db.Integer,primary_key=True)
+    #寒暄的话题
+    talk = db.Column(db.String(256))
+    #这节课学了什么
+    this_lesson = db.Column(db.String(256))
+    #下节课需要学什么
+    next_lesson = db.Column(db.String(256))
+    #作业
+    homework = db.Column(db.String(256))
+    #教材
+    textbook = db.Column(db.String(256))
+    #其他
+    other = db.Column(db.String(256))
+    #外键，绑定到课程上
+    lesson_id = db.Column(db.Integer,db.ForeignKey("lessons.id"))
+
+    def __repr__(self):
+        '''返回的字符串描述'''
+        return "<LessonRecord %s>"%self.lesson.student.username
 
 
 

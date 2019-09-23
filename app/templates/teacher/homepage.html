@@ -15,7 +15,7 @@
 </div>
 <div class='col-sm-3 col-md-3' >
     <ul class='nav nav-pills nav-stacked'>
-        <li role="presentation" {%if request.path[:11] == '/personal_c' %}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">My Lessons</a></li>
+        <li role="presentation" {%if request.path[:11] == '/personal_c' or request.path[:10] == '/teacher/r' %}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">My Lessons</a></li>
         <li role="presentation" {%if request.path[:10] == '/teacher/m' or request.path[:10] == '/teacher/e'%}class='active'{%endif%}><a href="{{url_for('teacher.my_students')}}">My Students</a></li>
         <li role="presentation" {%if request.path[:10] == '/teacher/p'%}class='active'{%endif%}><a href="{{url_for('teacher.personal_info')}}">Personal Information</a></li>    
     </ul>
@@ -35,7 +35,7 @@
             <tr>
                 <td><a href='#'>{{lesson.student.username}}</a></td>
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
-                <td>{% if moment().valueOf()>moment(lesson.time).valueOf()%}<a>Record</a>{%else%}Not started{%endif%}</td>
+                <td>{% if moment().valueOf()>moment(lesson.time).valueOf()%}<a href="{{url_for('teacher.record_lesson',id=lesson.id)}}">Record</a>{%else%}Not started{%endif%}</td>
                 <td>{{lesson.lesson_type}}</td>
                 <td></td>
             </tr>

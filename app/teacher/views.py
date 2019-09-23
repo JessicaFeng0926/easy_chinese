@@ -1,10 +1,10 @@
 from flask import render_template,request,current_app,redirect,url_for,flash
 from flask_login import current_user,login_required
 from . import teacher
-from .forms import PersonalInfoForm,EditProfileForm
+from .forms import PersonalInfoForm,EditProfileForm,RecordLessonForm
 from pytz import timezone,country_timezones
 from datetime import datetime
-from ..models import User,Lesson,StudentProfile
+from ..models import User,Lesson,StudentProfile,LessonRecord
 from .. import db
 import os
 
@@ -154,3 +154,36 @@ def edit_profile(username):
         form.teacher_phone.data = student_profile.teacher_phone
 
     return render_template('teacher/edit_profile.html',student=student,form=form)
+
+#填写课程详情
+@teacher.route('/record_lesson/<int:id>',methods=['GET','POST'])
+@login_required
+def record_lesson(id):
+    '''这是填写课程详情的视图'''
+    lesson = Lesson.query.get_or_404(id)
+    form = RecordLessonForm()
+    record = lesson.lesson_record.first()
+    #如果已经有记录了，那就是要修改
+    if record:
+        form.talk.data = record.talk
+        form.this_lesson.data = record.this_lesson
+        form.next_lesson.data = record.next_lesson
+        form.homework.data = record.homework
+        form.textbook.data = record.textbook
+        form.other.data = record.other
+    #如果没有记录，就新建一个
+    else:
+        record = LessonRecord()
+        record.lesson_id = id
+    if form.validate_on_submit():
+        record.talk = form.talk.data
+        record.this_lesson = form.this_lesson.data
+        record.next_lesson = form.next_lesson.data
+        record.homework = form.homework.data
+        record.textbook = form.textbook.data
+        record.other = form.other.data
+        lesson.status = form.status.data
+        db.session.add(record)
+        db.session.add(lesson)
+        return redirect(url_for('main.personal_center'))
+    return render_template('teacher/record_lesson.html',form=form)
