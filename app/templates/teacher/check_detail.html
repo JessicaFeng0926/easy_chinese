@@ -1,0 +1,78 @@
+{% extends 'teacher/homepage.html'%}
+{%block head%}
+{{super()}}
+<style>
+footer{
+    margin-top:300px;
+}
+</style>
+{%endblock head%}
+
+{%block title%}Check Detail{%endblock title%}
+{%block main%}
+<div class='col-sm-8 col-md-8'>
+    <div class='panel panel-default'>
+        <div class='panel-heading text-center'>
+            <strong>课程详情</strong>
+        </div>
+        <div class='panel-body'>
+            <table class='table'>
+                <tr>
+                    <th>学生</th>
+                    <th>老师</th>
+                    <th>上课时间</th>
+                    <th>完成状态</th>
+                </tr>
+                <tr>
+                    <td>{{lesson.student.username}}</td>
+                    <td>{{lesson.teacher.name}}</td>
+                    <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
+                    <td>{{lesson.c_status}}</td>
+                </tr>
+
+            </table>
+            <table class='table'>
+                <tr>
+                    <th>寒暄</th>
+                </tr>
+                <tr>
+                    <td>{{record.talk}}</td>
+                </tr>
+                <tr>
+                    <th>这节课学了什么</th>
+                </tr>
+                <tr>
+                    <td>{{record.this_lesson}}</td>
+                </tr>
+                <tr>
+                    <th>下节课安排</th>
+                </tr>
+                <tr>
+                    <td>{{record.next_lesson}}</td>
+                </tr>
+                <tr>
+                    <th>作业</th>
+                </tr>
+                <tr>
+                    <td>{{record.homework}}</td>
+                </tr>
+                <tr>
+                    <th>教材</th>
+                </tr>
+                <tr>
+                    <td>{{record.textbook}}</td>
+                </tr>
+                <tr>
+                    <th>其他注意事项</th>
+                </tr>
+                <tr>
+                    <td>{{record.other}}</td>
+                </tr>
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+{%endblock main%}

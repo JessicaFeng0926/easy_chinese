@@ -187,3 +187,30 @@ def record_lesson(id):
         db.session.add(lesson)
         return redirect(url_for('main.personal_center'))
     return render_template('teacher/record_lesson.html',form=form)
+
+#查看课程详情
+@teacher.route('/check_detail/<int:id>',methods=['GET','POST'])
+@login_required
+def check_detail(id):
+    '''查看课程详情'''
+    lesson = Lesson.query.get_or_404(id)
+    status_dict = {'Complete':'正常完成','Tea Absent':'教师缺勤','Stu Absent':'学生缺勤','Tea Late':'教师迟到'}
+    #添加中文描述的课时完成状态
+    lesson.c_status = status_dict[lesson.status]
+    #添加本节课的教师对象
+    teacher = User.query.get(lesson.teacher_id)
+    lesson.teacher = teacher
+    #添加用户以用户时区为标准的上课时间对象
+    utc = timezone('UTC')
+    tz = current_user.timezone
+    if len(tz) == 2:
+        tz = country_timezones[tz][0]
+    else:
+        tz = country_timezones[tz[:2]][int(tz[3:])]
+    tz = timezone(tz)
+    time = lesson.time
+    utctime = datetime(time.year,time.month,time.day,time.hour,tzinfo=utc)
+    localtime = utctime.astimezone(tz)
+    lesson.localtime = localtime
+    record = lesson.lesson_record.first()
+    return render_template('teacher/check_detail.html',lesson=lesson,record=record)
