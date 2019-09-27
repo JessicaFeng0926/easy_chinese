@@ -43,4 +43,5 @@ class RecordLessonForm(FlaskForm):
     textbook = StringField(label='教材',validators=[Length(1,256)],render_kw={'placeholder':'请写清楚教材名称、版本以及册数，如《新实用汉语课本》第2版第一册'},widget=TextArea())
     other = StringField(label='其他注意事项',validators=[Length(1,256)],widget=TextArea())
     status = SelectField(label='课时完成状态',validators=[Required()],choices=[['Complete','正常完成'],['Stu Absent','学生缺勤'],['Tea Absent','教师缺勤'],['Tea Late','教师迟到']])
+    t_comment = StringField(label='对学生表现的评价',validators=[Length(1,256)],widget=TextArea())
     submit = SubmitField(label='提交')

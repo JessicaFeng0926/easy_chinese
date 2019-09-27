@@ -162,19 +162,9 @@ def record_lesson(id):
     '''这是填写课程详情的视图'''
     lesson = Lesson.query.get_or_404(id)
     form = RecordLessonForm()
-    record = lesson.lesson_record.first()
-    #如果已经有记录了，那就是要修改
-    if record:
-        form.talk.data = record.talk
-        form.this_lesson.data = record.this_lesson
-        form.next_lesson.data = record.next_lesson
-        form.homework.data = record.homework
-        form.textbook.data = record.textbook
-        form.other.data = record.other
-    #如果没有记录，就新建一个
-    else:
-        record = LessonRecord()
-        record.lesson_id = id
+    record = lesson.lesson_record.first() or LessonRecord()
+    if not record.lesson_id:
+        record.lesson_id = lesson.id
     if form.validate_on_submit():
         record.talk = form.talk.data
         record.this_lesson = form.this_lesson.data
@@ -183,9 +173,21 @@ def record_lesson(id):
         record.textbook = form.textbook.data
         record.other = form.other.data
         lesson.status = form.status.data
+        lesson.t_comment = form.t_comment.data
         db.session.add(record)
         db.session.add(lesson)
         return redirect(url_for('main.personal_center'))
+    
+    form.talk.data = record.talk
+    form.this_lesson.data = record.this_lesson
+    form.next_lesson.data = record.next_lesson
+    form.homework.data = record.homework
+    form.textbook.data = record.textbook
+    form.other.data = record.other
+    form.status.data = lesson.status
+    form.t_comment.data = lesson.t_comment
+   
+    
     return render_template('teacher/record_lesson.html',form=form)
 
 #查看课程详情

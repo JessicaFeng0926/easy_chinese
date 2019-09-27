@@ -336,6 +336,11 @@ class Lesson(db.Model):
     message = db.Column(db.String(256))
     lesson_type = db.Column(db.String(16))
     status = db.Column(db.String(16),default='Not started')
+    #下面是师生互相的评论
+    s_comment = db.Column(db.String(256))
+    t_comment = db.Column(db.String(256))
+    #下面是学生给老师的评分
+    mark = db.Column(db.Integer)
     #声明和课程详情的一对一关系
     lesson_record = db.relationship("LessonRecord",backref='lesson',lazy='dynamic')
 
