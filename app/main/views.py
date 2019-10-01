@@ -39,7 +39,22 @@ def personal_center():
 
         return render_template('visitor/homepage.html',trial_lessons=trial_lessons)
     elif current_user.role.name == 'Student':
-        return render_template('student/homepage.html')
+        #查询出学生所有的课程
+        lessons = current_user.lessons.order_by(Lesson.time.desc()).all()
+        utc = timezone('UTC')
+        tz = current_user.timezone
+        if len(tz) == 2:
+            tz = country_timezones[tz]
+        else:
+            tz = country_timezones[tz[:2]][int(tz[3:])]
+        tz = timezone(tz)
+        for lesson in lessons:
+            lesson.teacher = User.query.get(lesson.teacher_id)
+            time = lesson.time
+            utctime = datetime(time.year,time.month,time.day,time.hour,tzinfo=utc)
+            localtime = utctime.astimezone(tz)
+            lesson.localtime = localtime
+        return render_template('student/homepage.html',lessons=lessons)
     elif current_user.role.name == 'Teacher':
         #查询出24小时内老师的未开始课程
         lessons = Lesson.query.filter_by(teacher_id = current_user.id,status ='Not started').order_by(Lesson.time.asc()).all()

@@ -30,18 +30,14 @@
                 <th>Status</th>
                 <th>Teacher's comment</th>
             </tr>
+            {%for lesson in lessons%}
             <tr>
-                <td><a href='#'>Monica</a></td>
-                <td>2019-9-26 8:00</td>
-                <td>Not started</td>
-                <td><span>[Cancel]</span></td>
+                <td><a href='#'>{{lesson.teacher.name}}</a></td>
+                <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
+                <td>{{lesson.status}}</td>
+                <td>{%if lesson.status == 'Not started'%}<a>[Cancel]</a>{%endif%}{{lesson.t_comment}}</td>
             </tr>
-            <tr>
-                <td><a href='#'>Monica</a></td>
-                <td>2019-7-28 8:00</td>
-                <td>Completed</td>
-                <td>Nam did a good job.His knowledge about Chinese culture is so impressive.</td>
-            </tr>
+            {%endfor%}
             
 
         </table>
