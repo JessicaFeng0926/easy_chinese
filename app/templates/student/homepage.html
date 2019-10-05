@@ -5,6 +5,11 @@
 #main{
     margin-bottom: 300px;
 }
+
+#cancel:hover{
+    color:blue;
+    cursor: pointer;
+}
 </style>
 {%endblock head%}
 {%block mytitle%}Personal Center{%endblock mytitle%}
@@ -35,7 +40,7 @@
                 <td><a href='#'>{{lesson.teacher.name}}</a></td>
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
                 <td>{{lesson.status}}</td>
-                <td>{%if lesson.status == 'Not started'%}<a>[Cancel]</a>{%endif%}{{lesson.t_comment}}</td>
+                <td>{%if lesson.status == 'Not started'%}<span id='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
             </tr>
             {%endfor%}
             
@@ -45,3 +50,32 @@
 </div>
 {%endblock main%}
 {%endblock page_content%}
+
+{%block scripts%}
+{{super()}}
+<script>
+$(function(){
+    var cancel=$("#cancel");
+    cancel.bind("click",function(){
+        var id=$(this).attr("lid");
+        var answer=confirm('Are you sure to cancel this lesson?');
+        if(answer==true){
+            $.ajax({
+            url:"{{url_for('student.cancel')}}",
+            type:"GET",
+            data:{id:id},
+            success:function(callback){
+                if(callback.status=='ok'){
+                    alert("That lesson has been canceled successfully.")
+                    window.location.reload();
+                }else{
+                    alert("Operation failed.");
+                }
+                }
+            })
+        }
+        
+    })
+})
+</script>
+{%endblock scripts%}

@@ -1,8 +1,8 @@
-from flask import current_app,url_for,render_template,redirect,flash,request
+from flask import current_app,url_for,render_template,redirect,flash,request,jsonify
 from flask_login import current_user,login_required
 from . import student
 from .forms import PersonalInfoForm
-from ..models import User
+from ..models import User,Lesson
 import os
 from ..import db
 
@@ -38,6 +38,17 @@ def personal_info():
     form.member_since.data = current_user.member_since.strftime('%Y-%m-%d')
     return render_template('student/personal_info.html',form=form)
 
-
+#取消已选课程
+@student.route('/cancel')
+@login_required
+def cancel():
+    '''取消相应的课程'''
+    id = request.args.get("id",0,type=int)
+    if id:
+        lesson=Lesson.query.get_or_404(id)
+        lesson.is_delete=True
+        db.session.add(lesson)
+        return jsonify({'status':'ok'})
+    return jsonify({'status','fail'})
 
 

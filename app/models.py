@@ -343,7 +343,8 @@ class Lesson(db.Model):
     mark = db.Column(db.Integer)
     #声明和课程详情的一对一关系
     lesson_record = db.relationship("LessonRecord",backref='lesson',lazy='dynamic')
-
+    #逻辑删除
+    is_delete = db.Column(db.Boolean,default=False)
     def __repr__(self):
         '''返回的描述字符串'''
         return '<Lesson %s>'%self.student.username

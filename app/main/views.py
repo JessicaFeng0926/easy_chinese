@@ -40,7 +40,7 @@ def personal_center():
         return render_template('visitor/homepage.html',trial_lessons=trial_lessons)
     elif current_user.role.name == 'Student':
         #查询出学生所有的课程
-        lessons = current_user.lessons.order_by(Lesson.time.desc()).all()
+        lessons = current_user.lessons.filter_by(is_delete=False).order_by(Lesson.time.desc()).all()
         utc = timezone('UTC')
         tz = current_user.timezone
         if len(tz) == 2:

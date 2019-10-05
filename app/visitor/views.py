@@ -105,7 +105,7 @@ def trial(username):
             if i in special_rest_list:
                 new_worktime_list.remove(i)
         #第六步：生成一个已预约的课程时间列表,并把这些时间点从老师的工作时间表中去掉
-        lessons = Lesson.query.filter_by(teacher_id = teacher.id).all()
+        lessons = Lesson.query.filter_by(teacher_id = teacher.id,is_delete=False).all()
         #已预约的课程时间列表
         lessons_list = []
         for lesson in lessons:
