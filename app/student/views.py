@@ -5,7 +5,7 @@ from .forms import PersonalInfoForm
 from ..models import User,Lesson
 import os
 from ..import db
-
+from datetime import datetime
 
 #个人信息
 @student.route('/personal_info',methods=['GET','POST'])
@@ -46,9 +46,12 @@ def cancel():
     id = request.args.get("id",0,type=int)
     if id:
         lesson=Lesson.query.get_or_404(id)
-        lesson.is_delete=True
-        db.session.add(lesson)
-        return jsonify({'status':'ok'})
-    return jsonify({'status','fail'})
+        #还要看看时间是不是超过10分钟
+        if (lesson.time-datetime.utcnow()).seconds >= 600:
+            lesson.is_delete=True
+            db.session.add(lesson)
+            return jsonify({'status':'ok'})
+        return jsonify({"status":"fail"})
+    return jsonify({'status':'fail'})
 
 
