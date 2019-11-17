@@ -39,8 +39,8 @@
             <tr>
                 <td><a href='#'>{{lesson.teacher.name}}</a></td>
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
-                <td>{{lesson.status}}</td>
-                <td>{%if lesson.status == 'Not started'%}<span id='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
+                <td>{% if lesson.status == 'Not started' and moment().valueOf()>moment(lesson.time).valueOf() %} Waiting for comment{%else%}{{lesson.status}}{%endif%}</td>
+                <td>{%if lesson.status == 'Not started' and lesson.cancel %}<span id='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
             </tr>
             {%endfor%}
             
@@ -78,4 +78,5 @@ $(function(){
     })
 })
 </script>
+{{moment.include_moment()}}
 {%endblock scripts%}

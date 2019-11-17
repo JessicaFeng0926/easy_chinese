@@ -54,6 +54,12 @@ def personal_center():
             utctime = datetime(time.year,time.month,time.day,time.hour,tzinfo=utc)
             localtime = utctime.astimezone(tz)
             lesson.localtime = localtime
+            if lesson.status == 'Not started':
+                #课程开始时间距离现在还大于10分钟
+                if lesson.time>datetime.utcnow()+timedelta(0,600):
+                    lesson.cancel = True
+                else:
+                    lesson.cancel = False
         return render_template('student/homepage.html',lessons=lessons)
     elif current_user.role.name == 'Teacher':
         #查询出24小时内老师的未开始课程
