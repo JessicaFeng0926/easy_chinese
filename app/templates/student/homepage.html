@@ -20,7 +20,7 @@
 </div>
 <div class='col-sm-3 col-md-3' >
     <ul class='nav nav-pills nav-stacked'>
-        <li role="presentation" {%if request.path[:11] == '/personal_c' %}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">My Lessons</a></li>
+        <li role="presentation" {%if request.path[:11] == '/personal_c'  or request.path[:10]=='/student/r'%}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">My Lessons</a></li>
         <li role="presentation"><a href="#">Book a lesson</a></li>
         <li role="presentation" {%if request.path[:10] == '/student/p'%}class='active'{%endif%}><a href="{{url_for('student.personal_info')}}">Personal Information</a></li>    
     </ul>
@@ -34,6 +34,7 @@
                 <th>Time</th>
                 <th>Status</th>
                 <th>Teacher's comment</th>
+                <th>Rate</th>
             </tr>
             {%for lesson in lessons%}
             <tr>
@@ -41,6 +42,7 @@
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
                 <td>{% if lesson.status == 'Not started' and moment().valueOf()>moment(lesson.time).valueOf() %} Waiting for comment{%else%}{{lesson.status}}{%endif%}</td>
                 <td>{%if lesson.status == 'Not started' and lesson.cancel %}<span id='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
+                <td>{% if moment().valueOf()>moment(lesson.time).valueOf() and not lesson.s_comment %}<a href="{{url_for('student.rate',lesson_id=lesson.id)}}">Do it now</a>{%else%}Done{%endif%}</td>
             </tr>
             {%endfor%}
             

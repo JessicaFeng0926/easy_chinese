@@ -1,7 +1,7 @@
 from flask import current_app,url_for,render_template,redirect,flash,request,jsonify
 from flask_login import current_user,login_required
 from . import student
-from .forms import PersonalInfoForm
+from .forms import PersonalInfoForm,StudentRateForm
 from ..models import User,Lesson
 import os
 from ..import db
@@ -54,4 +54,21 @@ def cancel():
         return jsonify({"status":"fail"})
     return jsonify({'status':'fail'})
 
-
+#给课程评分
+@student.route('/rate/<lesson_id>',methods=['GET','POST'])
+@login_required
+def rate(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    if current_user.id != lesson.student_id:
+        flash("You can not rate a lesson that does not belong to you.")
+        return redirect(url_for("main.personal_center"))
+    form = StudentRateForm()
+    if form.validate_on_submit():
+        lesson.mark = int(form.mark.data)
+        lesson.s_comment = form.s_comment.data
+        db.session.add(lesson)
+        flash("Rated successfully!")
+        return redirect(url_for("main.personal_center"))
+    flash("You'd better double check before you submit your rating ,because you're not allowed to modify it.")
+    return render_template('student/student_rate.html',form=form)
+    

@@ -1,4 +1,5 @@
 from wtforms.fields import StringField,SubmitField,SelectField,FileField
+from wtforms.widgets import TextArea
 from wtforms.validators import Required,Email,Length
 from flask_wtf import FlaskForm
 from tools.ectimezones import ectimezone_list
@@ -13,3 +14,9 @@ class PersonalInfoForm(FlaskForm):
     email=StringField(label='Email',validators=[Required(),Email()],render_kw={'readonly':True})
     member_since=StringField(label='Member since',validators=[Required()],render_kw={'readonly':True})
     submit=SubmitField(label='Submit')
+
+class StudentRateForm(FlaskForm):
+    '''这是学生给课程评分的表单类'''
+    mark = SelectField(label="Rating",validators=[Required()],choices=[['0',0],['1',1],['2',2],['3',3],['4',4],['5',5]])
+    s_comment = StringField(label="What do you think of this lesson?",validators=[Length(1,256)],widget=TextArea())
+    submit = SubmitField(label='Submit')
