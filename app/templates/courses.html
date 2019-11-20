@@ -1,0 +1,204 @@
+{%extends 'base.html'%}
+{%block head%}
+{{super()}}
+{%endblock head%}
+{%block title%}Courses{%endblock title%}
+{%block page_content%}
+<div class='col-sm-12 col-md-12' id='regular'>
+    <h1 class='text-center'>Regular Chinese</h1>
+    <div class='row'>
+        <div class="col-sm-6 col-md-4">
+                <div class="thumbnail">
+                    <img src="{{url_for('static',filename='img/r_textbooks.jpg')}}">
+                    <div class="caption">
+                    <h3 class='text-center'>Recommended Textbooks</h3>
+                    <p>They are for references only. We can also use your own leanring materials if you want.</p>
+                    </div>
+                </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+                <div class="thumbnail">
+                    <img src="{{url_for('static',filename='img/r_topics.jpg')}}">
+                    <div class="caption">
+                    <h3 class='text-center' id='business'>Samples of Regular Topics</h3>
+                    <p>Your teacher can help you learn any topic that you are interested in besides the topics in your textbook.</p>
+                    </div>
+                </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <div class='panel panel-default'>
+                <table class='table'>
+                    <tr>
+                        <th>Lessons</th>
+                        <th>Time limit</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>  
+                    <tr>
+                        <td>20</td>
+                        <td>5 months</td>
+                        <td>$250</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>20</td>
+                        <td>3 months</td>
+                        <td>$240</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>40</td>
+                        <td>6 months</td>
+                        <td>$480</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>80</td>
+                        <td>1 year</td>
+                        <td>$960</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>120</td>
+                        <td>2 years</td>
+                        <td>$1440</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                </table>
+            </div>
+        </div>
+    </div><!-- end of row -->
+</div><!-- end of regular Chinese -->
+
+<div class='col-sm-12 col-md-12'>
+    <h1 class='text-center'>Business Chinese</h1>
+    <div class='row'>
+        <div class="col-sm-6 col-md-4">
+                <div class="thumbnail">
+                    <img src="{{url_for('static',filename='img/b_textbooks.jpg')}}">
+                    <div class="caption">
+                    <h3 class='text-center'>Recommended Textbooks</h3>
+                    <p>They are for references only. We can also use your own leanring materials if you want.</p>
+                    </div>
+                </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+                <div class="thumbnail">
+                    <img src="{{url_for('static',filename='img/b_topics.jpg')}}">
+                    <div class="caption">
+                    <h3 class='text-center'>Samples of Business Topics</h3>
+                    <p>Your teacher can help you learn any topic that you are interested in besides the topics in your textbook.</p>
+                    </div>
+                </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <div class='panel panel-default'>
+                <table class='table'>
+                    <tr>
+                        <th>Lessons</th>
+                        <th>Time limit</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>  
+                    <tr>
+                        <td>20</td>
+                        <td>5 months</td>
+                        <td>$290</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>20</td>
+                        <td>3 months</td>
+                        <td>$280</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>40</td>
+                        <td>6 months</td>
+                        <td>$560</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>80</td>
+                        <td>1 year</td>
+                        <td>$1120</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>120</td>
+                        <td>2 years</td>
+                        <td>$1680</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                </table>
+            </div>
+        </div>
+    </div><!-- end of row -->
+</div><!-- end of business Chinese -->
+
+<div class='col-sm-12 col-md-12' id='test'>
+    <h1 class='text-center'>Test Prep Chinese</h1>
+    <div class='row'>
+        <div class="col-sm-6 col-md-4">
+                <div class="thumbnail">
+                    <img src="{{url_for('static',filename='img/t_textbooks.jpg')}}">
+                    <div class="caption">
+                    <h3 class='text-center'>Recommended Textbooks</h3>
+                    <p>They are for references only. We can also use your own leanring materials if you want.</p>
+                    </div>
+                </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+                <div class="thumbnail">
+                    <img src="{{url_for('static',filename='img/t_topics.jpg')}}">
+                    <div class="caption">
+                    <h3 class='text-center'>Samples of Test Topics</h3>
+                    <p>Your teacher can help you learn any topic that you are interested in besides the topics in your textbook.</p>
+                    </div>
+                </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <div class='panel panel-default'>
+                <table class='table'>
+                    <tr>
+                        <th>Lessons</th>
+                        <th>Time limit</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>  
+                    <tr>
+                        <td>20</td>
+                        <td>5 months</td>
+                        <td>$290</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>20</td>
+                        <td>3 months</td>
+                        <td>$280</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>40</td>
+                        <td>6 months</td>
+                        <td>$560</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>80</td>
+                        <td>1 year</td>
+                        <td>$1120</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                    <tr>
+                        <td>120</td>
+                        <td>2 years</td>
+                        <td>$1680</td>
+                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                    </tr> 
+                </table>
+            </div>
+        </div>
+    </div><!-- end of row -->
+</div><!-- end of test Chinese -->
+{%endblock page_content%}
