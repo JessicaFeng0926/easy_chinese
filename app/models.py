@@ -113,6 +113,8 @@ class User(UserMixin,db.Model):
     lessons = db.relationship('Lesson',backref='student',lazy='dynamic')
     #声明和主管学生信息表的一对一关系
     student_profile = db.relationship('StudentProfile',backref='student',lazy='dynamic')
+    #声明和订单表的一对一关系
+    orders = db.relationship('Order',backref='student',lazy='dynamic')
     #逻辑删除
     is_delete = db.Column(db.Boolean,default=False)
     
@@ -399,4 +401,34 @@ class LessonRecord(db.Model):
         return "<LessonRecord %s>"%self.lesson.student.username
 
 
+
+class Order(db.Model):
+    '''
+    这是课程订单的模型类
+    '''
+    __tablename__ = "orders"
+    #订单ID，订单的唯一标识
+    id = db.Column(db.Integer,primary_key=True)
+    #课程类型(Regular,Business,Test Prep)
+    lesson_type = db.Column(db.String(16))
+    #总课程数
+    lesson_amount = db.Column(db.Integer)
+    #完成期限（为了方便，都以month为单位，所以有5,3,6,12,24)
+    time_limit = db.Column(db.Integer)
+    #订单金额
+    price = db.Column(db.Integer)
+    #支付状态（wait,payed,canceled)
+    pay_status = db.Column(db.String(16))
+    #课程购买日期
+    pay_time = db.Column(db.DateTime)
+    #课程结束日期
+    end_time = db.Column(db.DateTime)
+    #剩余课时数
+    left_amount = db.Column(db.Integer)
+    #学生（外键）
+    student_id = db.Column(db.Integer,db.ForeignKey("users.id"))
+    #曾经的教师(如果有不止一位过去的教师，就用分号分隔她们的id，比如1;22;56;3)
+    past_teachers = db.Column(db.String(256))
+    #现在的教师
+    teacher_id = db.Column(db.Integer)
 

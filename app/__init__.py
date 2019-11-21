@@ -50,6 +50,9 @@ def create_app(config_name):
     from .teacher import teacher as teacher_blueprint
     app.register_blueprint(teacher_blueprint,url_prefix='/teacher')
     
+    from .pay import pay as pay_blueprint
+    app.register_blueprint(pay_blueprint,url_prefix='/pay')
+    
     return app
 
 
