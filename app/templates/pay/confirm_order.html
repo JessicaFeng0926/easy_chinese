@@ -2,10 +2,44 @@
 
 {%block head%}
 {{super()}}
+<style>
+    #main{
+        margin-bottom: 200px;
+        }
+</style>
 {%endblock head%}
 
 {%block title%}Confirm Order{%endblock title%}
 
 {%block page_content%}
-
+<div class='page-header'>
+<h1>Please confirm your order</h1>
+</div>
+<div class='col-sm-8 col-sm-offset-2' id='main'>
+    <div class='panel panel-primary'>
+        <div class='panel-heading'>
+            <h4>Your order</h4>
+        </div>
+        <table class='table'>
+            <tr>
+                <th>Lesson type</th>
+                <th>Lessons</th>
+                <th>Time limit</th>
+                <th>Price</th>
+            </tr>
+            <tr>
+                <td>{{lesson_type}} course</td>
+                <td>{{lesson_amount}}</td>
+                <td>{%if time_limit == 12%}1 year{%elif time_limit == 24%}2 years{%else%}{{time_limit}} months{%endif%}</td>
+                <td>${{price}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><a href="#" class='btn btn-primary'>Submit</a></td>
+            </tr>
+        </table>
+    </div>
+</div>
 {%endblock page_content%}

@@ -96,11 +96,4 @@ def personal_center():
     elif current_user.role.name == 'Administrator':
         return render_template('admin/homepage.html')
 
-#课程价格信息视图  
-@main.route('/course_info')
-@login_required
-def course_info():
-    '''
-    这是供所有已登录用于浏览的课程价格信息视图
-    '''
-    return render_template("courses.html")
+

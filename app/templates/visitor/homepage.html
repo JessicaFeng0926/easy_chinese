@@ -38,7 +38,7 @@
                     <td>{{lesson.localtime}}</td>
                     <td>{{lesson.status}}</td>
                     <td>{%if lesson.t_comment%}{{lesson.t_comment}}{%endif%}</td>
-                    <td>{%if lesson.status == "Complete"%}<a href="{{url_for('main.course_info')}}" class="btn btn-primary">Join Us</a>{%endif%}</td>
+                    <td>{%if lesson.status == "Complete"%}<a href="{{url_for('pay.course_info')}}" class="btn btn-primary">Join Us</a>{%endif%}</td>
                 </tr>
 
                 {%endfor%}

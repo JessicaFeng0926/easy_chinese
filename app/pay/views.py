@@ -3,9 +3,19 @@ from flask_login import login_required,current_user
 from app.models import User,Lesson,Order
 from . import pay
 
+#课程价格信息视图
+@pay.route('/course_info')
+@login_required
+def course_info():
+    '''
+    这是供所有已登录用于浏览的课程价格信息视图
+    '''
+    return render_template("pay/courses.html")
+
+#点击购买按钮后的处理视图
 @pay.route('/buy/<lesson_type>/<int:lesson_amount>/<int:time_limit>/<int:price>')
 @login_required
-def buy(lesson_type,lesson_amount,time_limit):
+def buy(lesson_type,lesson_amount,time_limit,price):
     '''
     用户点击购买按钮后就用这个视图处理
 

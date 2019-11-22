@@ -4,6 +4,9 @@
 {%endblock head%}
 {%block title%}Courses{%endblock title%}
 {%block page_content%}
+<div class='page-header'>
+    <h1>Course Details</h1>
+</div>
 <div class='col-sm-12 col-md-12' id='regular'>
     <h1 class='text-center'>Regular Chinese</h1>
     <div class='row'>
@@ -38,31 +41,31 @@
                         <td>20</td>
                         <td>5 months</td>
                         <td>$250</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Regular',lesson_amount=20,time_limit=5,price=250)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>20</td>
                         <td>3 months</td>
                         <td>$240</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Regular',lesson_amount=20,time_limit=3,price=240)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>40</td>
                         <td>6 months</td>
                         <td>$480</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Regular',lesson_amount=40,time_limit=6,price=480)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>80</td>
                         <td>1 year</td>
                         <td>$960</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Regular',lesson_amount=80,time_limit=12,price=960)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>120</td>
                         <td>2 years</td>
                         <td>$1440</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Regular',lesson_amount=120,time_limit=24,price=1440)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                 </table>
             </div>
@@ -104,31 +107,31 @@
                         <td>20</td>
                         <td>5 months</td>
                         <td>$290</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Business',lesson_amount=20,time_limit=5,price=290)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>20</td>
                         <td>3 months</td>
                         <td>$280</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Business',lesson_amount=20,time_limit=3,price=280)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>40</td>
                         <td>6 months</td>
                         <td>$560</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Business',lesson_amount=40,time_limit=6,price=560)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>80</td>
                         <td>1 year</td>
                         <td>$1120</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Business',lesson_amount=80,time_limit=12,price=1120)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>120</td>
                         <td>2 years</td>
                         <td>$1680</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Business',lesson_amount=120,time_limit=24,price=1680)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                 </table>
             </div>
@@ -170,31 +173,31 @@
                         <td>20</td>
                         <td>5 months</td>
                         <td>$290</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Test Prep',lesson_amount=20,time_limit=5,price=290)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>20</td>
                         <td>3 months</td>
                         <td>$280</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Test Prep',lesson_amount=20,time_limit=3,price=280)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>40</td>
                         <td>6 months</td>
                         <td>$560</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Test Prep',lesson_amount=40,time_limit=6,price=560)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>80</td>
                         <td>1 year</td>
                         <td>$1120</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Test Prep',lesson_amount=80,time_limit=12,price=1120)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                     <tr>
                         <td>120</td>
                         <td>2 years</td>
                         <td>$1680</td>
-                        <td><a href='#' class='btn btn-primary'>Buy</a></td>
+                        <td><a href="{{url_for('pay.buy',lesson_type='Test Prep',lesson_amount=120,time_limit=24,price=1680)}}" class='btn btn-primary'>Buy</a></td>
                     </tr> 
                 </table>
             </div>
