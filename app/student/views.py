@@ -2,10 +2,11 @@ from flask import current_app,url_for,render_template,redirect,flash,request,jso
 from flask_login import current_user,login_required
 from . import student
 from .forms import PersonalInfoForm,StudentRateForm
-from ..models import User,Lesson
+from ..models import User,Lesson,Order
 import os
 from ..import db
 from datetime import datetime
+from pytz import country_timezones,timezone
 
 #个人信息
 @student.route('/personal_info',methods=['GET','POST'])
@@ -72,3 +73,33 @@ def rate(lesson_id):
     flash("You'd better double check before you submit your rating ,because you're not allowed to modify it.")
     return render_template('student/student_rate.html',form=form)
     
+#我的课时包
+@student.route('/my_packages')
+@login_required
+def my_packages():
+    '''
+    这是学生的所有课时包页面
+    '''
+    #这是未付款的课时包
+    new_orders=current_user.orders.filter(Order.pay_status=='waiting').order_by(Order.id.desc()).all()
+    for order in new_orders:
+        order.teacher=User.query.get(order.teacher_id)
+    #下面是已付款的课时包
+    old_orders = current_user.orders.filter(Order.pay_status=='paid').order_by(Order.id.desc()).all()
+    #学生的时区
+    tz=current_user.timezone
+    if len(tz)==2:
+        tz = country_timezones[tz][0] 
+    else:
+        tz = country_timezones[tz[:2]][int(tz[3:])]
+    tz = timezone(tz)
+    utc = timezone('UTC')
+    for order in old_orders:
+        order.teacher=User.query.get(order.teacher_id)
+        start = datetime(order.pay_time.year,order.pay_time.month,order.pay_time.day,order.pay_time.hour,tzinfo=utc)
+        local_start = start.astimezone(tz)
+        order.local_start = local_start
+        end = datetime(order.end_time.year,order.end_time.month,order.end_time.day,order.end_time.hour,tzinfo=utc)
+        local_end = end.astimezone(tz)
+        order.local_end = local_end
+    return render_template('student/my_packages.html',new_orders=new_orders,old_orders=old_orders)

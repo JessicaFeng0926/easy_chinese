@@ -4,7 +4,7 @@ from flask_login import current_user,login_required
 from . forms import PersonalInfoForm
 import os
 from .. import db
-from ..models import User,Lesson
+from ..models import User,Lesson,Order
 from pytz import country_timezones,timezone
 from datetime import datetime,timedelta
 import calendar
@@ -210,3 +210,11 @@ def trial(username):
             return jsonify({'status':'ok','msg':"You've successfully booked a trial lesson."})
     return render_template('visitor/trial.html',this_week=this_week,new_worktime_list=new_worktime_list,only_dates=only_dates,month_name=month_name,year=year,current_page=current_page,teacher=teacher,lessons_list=lessons_list)
 
+#游客所有课时包视图
+@visitor.route('/my_packages')
+@login_required
+def my_packages():
+    orders = current_user.orders.filter(Order.pay_status != 'canceled').order_by(Order.id.desc()).all()
+    for order in orders:
+        order.teacher = User.query.get(order.teacher_id)
+    return render_template('visitor/my_packages.html',orders=orders)

@@ -26,18 +26,20 @@
                 <th>Lessons</th>
                 <th>Time limit</th>
                 <th>Price</th>
+                <th>Teacher</th>
             </tr>
             <tr>
                 <td>{{lesson_type}} course</td>
                 <td>{{lesson_amount}}</td>
                 <td>{%if time_limit == 12%}1 year{%elif time_limit == 24%}2 years{%else%}{{time_limit}} months{%endif%}</td>
                 <td>${{price}}</td>
+                <td>{%if teacher %}{{teacher.name}}{%else%}We will arrange a suitable teacher for you later{%endif%}</td>
             </tr>
             <tr>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td><a href="#" class='btn btn-primary'>Submit</a></td>
+                <td><a {%if teacher%}href="{{url_for('pay.submit_order',lesson_type=lesson_type,lesson_amount=lesson_amount,time_limit=time_limit,price=price,teacher_id=teacher.id)}}"{%else%}href="{{url_for('pay.submit_order',lesson_type=lesson_type,lesson_amount=lesson_amount,time_limit=time_limit,price=price,teacher_id='None')}}" {%endif%}class='btn btn-primary'>Submit</a></td>
             </tr>
         </table>
     </div>

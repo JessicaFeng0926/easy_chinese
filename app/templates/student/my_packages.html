@@ -1,0 +1,71 @@
+{%extends 'student/homepage.html'%}
+{%block head%}
+{{super()}}
+{%endblock head%}
+
+{%block title%}My Packages{%endblock title%}
+
+{%block main%}
+<div class='col-xs-12 col-sm-9' id='main'>
+    <div class='panel panel-default'>
+        <div class='panel-heading'>
+            <h4>Unpaid packages</h4>
+        </div>
+        
+        <table class='table'>
+            {% if new_orders %}
+            <tr>
+                <th>Order id</th>
+                <th>Lesson type</th>
+                <th>Lessons</th>
+                <th>Time limit</th>
+                <th>Price</th>
+                <th>Teacher</th>
+                <th></th>
+            </tr>
+            {%for order in new_orders%}
+            <tr>
+                <td>{{order.id}}</td>
+                <td>{{order.lesson_type}} Course</td>
+                <td>{{order.lesson_amount}}</td>
+                <td>{%if order.time_limit == 12%}1 year{%elif order.time_limit==24%}2 years{%else%}{{order.time_limit}} months{%endif%}</td>
+                <td>${{order.price}}</td>
+                <td>{{order.teacher.name}}</td>
+                <td><a href="#" class='btn btn-primary'>Pay now</a></td>
+            </tr>
+            {%endfor%}
+            {%else%}
+            <tr>
+                <td>You don't have unpaid packages. Click <a href="{{url_for('pay.course_info')}}">here</a> to see the course details.</td>
+            </tr>
+            {%endif%}
+        </table>
+    </div> <!-- end of unpaid packages -->
+
+    <div class='panel panel-default'>
+        <div class='panel-heading'>
+            <h4>Paid packages</h4>
+        </div>
+        <table class='table'>
+            <tr>
+                <th>Order id</th>
+                <th>Lesson type</th>
+                <th>Left lessons</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Teacher</th>
+            </tr>
+            {%for order in old_orders%}
+            <tr>
+                <td>{{order.id}}</td>
+                <td>{{order.lesson_type}} Course</td>
+                <td>{{order.left_amount}}/{{order.lesson_amount}}</td>
+                <td>{{"%s-%s-%s %s:00"|format(order.local_start.year,order.local_start.month,order.local_start.day,order.local_start.hour)}}</td>
+                <td>{{"%s-%s-%s %s:00"|format(order.local_end.year,order.local_end.month,order.local_end.day,order.local_end.hour)}}</td>
+                <td>{{order.teacher.name}}</td>
+            </tr>
+            {%endfor%}
+        </table>
+    </div>
+</div>
+{%endblock main%}

@@ -1,0 +1,43 @@
+{%extends 'visitor/homepage.html'%}
+{%block head%}
+{{super()}}
+{%endblock head%}
+
+{%block title%}My Packages{%endblock title%}
+
+{%block main%}
+<div class='col-xs-12 col-sm-9' id='main'>
+    <div class='panel panel-default'>
+        <table class='table'>
+            
+            {%if orders %}
+            <tr>
+                <th>Order id</th>
+                <th>Lesson type</th>
+                <th>Lessons</th>
+                <th>Time limit</th>
+                <th>Price</th>
+                <th>Teacher</th>
+                <th></th>
+            </tr>
+            {% for order in orders%}
+            <tr>
+                <td>{{order.id}}</td>
+                <td>{{order.lesson_type}} Course</td>
+                <td>{{order.lesson_amount}}</td>
+                <td>{%if order.time_limit == 12%}1 year{%elif order.time_limit==24%}2 years{%else%}{{order.time_limit}} months{%endif%}</td>
+                <td>${{order.price}}</td>
+                <td>{{order.teacher.name}}</td>
+                <td><a href="#" class='btn btn-primary'>Pay now</a></td>
+            </tr>
+            {%endfor%}
+            {%else%}
+            <tr>
+                <td>You don't have any orders.Click <a href="{{url_for('pay.course_info')}}">here</a> to check the courses.</td>
+            </tr>
+            
+            {%endif%}
+        </table>
+    </div>
+</div>
+{%endblock main%}

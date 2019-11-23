@@ -15,7 +15,8 @@
 </div>
 <div class='col-sm-3 col-md-3' >
     <ul class='nav nav-pills nav-stacked'>
-        <li role="presentation" {%if request.path[:11] == '/personal_c' %}class="active"{%endif%}><a href="{{url_for('main.personal_center')}}">Trial lesson record</a></li>
+        <li role="presentation" {%if request.path[:11] == '/personal_c' %}class="active"{%endif%}><a href="{{url_for('main.personal_center')}}">Trial Lesson Record</a></li>
+        <li role='presentation' {%if request.path[:10] == '/visitor/m'%} class='active' {%endif%}><a href="{{url_for('visitor.my_packages')}}">My Packages</a></li>
         <li role="presentation" {%if request.path[:12] == '/visitor/per' %}class='active'{%endif%}><a href="{{url_for('visitor.personal_info')}}">Personal Information</a></li>
 
     </ul>
