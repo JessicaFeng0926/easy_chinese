@@ -1,8 +1,11 @@
-from flask import redirect,render_template,request,url_for
+from flask import redirect,render_template,request,url_for,jsonify
 from flask_login import login_required,current_user
 from app.models import User,Lesson,Order
 from . import pay
 from app import db
+from alipay import AliPay
+import os
+from config import basedir
 
 #课程价格信息视图
 @pay.route('/course_info')
@@ -92,4 +95,60 @@ def submit_order(lesson_type,lesson_amount,time_limit,price,teacher_id):
     if current_user.role_id == 1:
         return redirect(url_for('visitor.my_packages'))
     return redirect(url_for('student.my_packages'))
+
+#这是支付的视图
+@pay.route('/pay_order')
+@login_required
+def pay_order():
+    '''
+    这是支付订单的视图
+    :参数 order_id:订单号
+    '''
+    #查找符合条件的订单
+    order_id = request.args.get('order_id',0,type=int)
+    order = Order.query.filter(Order.id==order_id,Order.student_id==current_user.id,Order.pay_status=='waiting').first()
+    if order:
+        #获取app私钥
+        app_private_key_string = open(os.path.join(basedir,'tools/app_private_key.pem')).read()
+        #获取支付宝公钥
+        alipay_public_key_string = open(os.path.join(basedir,'tools/alipay_public_key.pem')).read()
+        #创建支付宝sdk的工具对象
+        alipay_client = AliPay(
+            appid="2016101700704120", #这是从沙箱里拿过来的
+            app_notify_url=None,  # 默认回调url
+            app_private_key_string=app_private_key_string,
+            # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
+            alipay_public_key_string=alipay_public_key_string,
+            sign_type="RSA2", # RSA 或者 RSA2
+            debug=True  # 默认False,我们是沙箱环境，所以变成True
+        )
+
+        #提交订单数据(游客和学生支付后跳转的网址不一样)
+        if current_user.role_id == 1:
+
+            order_string = alipay_client.api_alipay_trade_page_pay(
+            out_trade_no=order_id, #订单编号
+            total_amount=str(order.price*7), #金额以元为单位
+            subject='Easy Chinese %s'%order_id,
+            return_url="127.0.0.1:5000/visitor/my_packages",
+            notify_url=None # 可选, 不填则使用默认notify url
+            )
+        else:
+            order_string = alipay_client.api_alipay_trade_page_pay(
+            out_trade_no=order_id, #订单编号
+            total_amount=str(order.price*7), #金额以元为单位
+            subject='Easy Chinese %s'%order_id,
+            return_url="127.0.0.1:5000/student/my_packages",
+            notify_url=None # 可选, 不填则使用默认notify url
+            )
+
+        #构建让支付宝跳转的链接地址
+        pay_url = "https://openapi.alipaydev.com/gateway.do?"+order_string
+        return jsonify({'status':'ok','msg':pay_url})
+    else:
+        return jsonify({'status':'fail','msg':'Order information error'})
+     
+
+
     
+

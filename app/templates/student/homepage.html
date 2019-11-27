@@ -42,7 +42,7 @@
                 <td><a href='#'>{{lesson.teacher.name}}</a></td>
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
                 <td>{% if lesson.status == 'Not started' and moment().valueOf()>moment(lesson.time).valueOf() %} Waiting for comment{%else%}{{lesson.status}}{%endif%}</td>
-                <td>{%if lesson.status == 'Not started' and lesson.cancel %}<span id='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
+                <td>{%if lesson.status == 'Not started' and lesson.cancel %}<span class='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
                 <td>{% if moment().valueOf()>moment(lesson.time).valueOf() and not lesson.s_comment %}<a href="{{url_for('student.rate',lesson_id=lesson.id)}}">Do it now</a>{%else%}Done{%endif%}</td>
             </tr>
             {%endfor%}
@@ -58,7 +58,7 @@
 {{super()}}
 <script>
 $(function(){
-    var cancel=$("#cancel");
+    var cancel=$(".cancel");
     cancel.bind("click",function(){
         var id=$(this).attr("lid");
         var answer=confirm('Are you sure to cancel this lesson?');
