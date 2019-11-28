@@ -31,7 +31,7 @@
                 <td>{%if order.time_limit == 12%}1 year{%elif order.time_limit==24%}2 years{%else%}{{order.time_limit}} months{%endif%}</td>
                 <td>${{order.price}}</td>
                 <td>{{order.teacher.name}}</td>
-                <td><a href="#" class='btn btn-primary'>Pay now</a></td>
+                <td><button class='btn btn-primary' order-id={{order.id}}>Pay now</button></td>
             </tr>
             {%endfor%}
             {%else%}
@@ -69,3 +69,28 @@
     </div>
 </div>
 {%endblock main%}
+
+{%block scripts%}
+{{super()}}
+<script>
+$(function(){
+    $('button').click(function(){
+        var order_id = $(this).attr('order-id');
+        console.log(order_id);
+        $.ajax({
+            type:'GET',
+            url:"{{url_for('pay.pay_order')}}",
+            data:{order_id:order_id},
+            success:function(callback){
+                if(callback.status=='ok'){
+                    location.href=callback.msg;
+                }
+                else if(callback.status=='fail'){
+                    alert(callback.msg);
+                }
+            }
+        })
+    })
+})
+</script>
+{%endblock scripts%}

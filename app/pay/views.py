@@ -6,6 +6,8 @@ from app import db
 from alipay import AliPay
 import os
 from config import basedir
+from tools.exrate import dollar_2_rmb
+from datetime import datetime,timedelta
 
 #课程价格信息视图
 @pay.route('/course_info')
@@ -123,32 +125,41 @@ def pay_order():
             debug=True  # 默认False,我们是沙箱环境，所以变成True
         )
 
-        #提交订单数据(游客和学生支付后跳转的网址不一样)
-        if current_user.role_id == 1:
-
-            order_string = alipay_client.api_alipay_trade_page_pay(
+        #提交订单数据(支付成功后跳转到修改数据库中订单状态的视图)
+        
+        order_string = alipay_client.api_alipay_trade_page_pay(
             out_trade_no=order_id, #订单编号
-            total_amount=str(order.price*7), #金额以元为单位
+            total_amount=str(dollar_2_rmb(order.price)), #金额以元为单位
             subject='Easy Chinese %s'%order_id,
-            return_url="127.0.0.1:5000/visitor/my_packages",
-            notify_url=None # 可选, 不填则使用默认notify url
-            )
-        else:
-            order_string = alipay_client.api_alipay_trade_page_pay(
-            out_trade_no=order_id, #订单编号
-            total_amount=str(order.price*7), #金额以元为单位
-            subject='Easy Chinese %s'%order_id,
-            return_url="127.0.0.1:5000/student/my_packages",
+            return_url="http://127.0.0.1:5000/pay/pay_complete/"+str(order_id),
             notify_url=None # 可选, 不填则使用默认notify url
             )
 
         #构建让支付宝跳转的链接地址
         pay_url = "https://openapi.alipaydev.com/gateway.do?"+order_string
+        
         return jsonify({'status':'ok','msg':pay_url})
     else:
         return jsonify({'status':'fail','msg':'Order information error'})
      
-
+#支付完成后修改订单数据的视图
+@pay.route('/pay_complete/<int:order_id>')
+@login_required
+def pay_complete(order_id):
+    '''修改订单状态'''
+    order = Order.query.filter(Order.id==order_id,Order.student_id==current_user.id).first()
+    if order:
+        order.pay_status='paid'
+        order.pay_time = datetime.utcnow()
+        order.end_time = datetime.utcnow()+timedelta(order.time_limit*30)
+        db.session.add(order)
+        if current_user.role_id == 1:
+            current_user.role_id = 2
+            db.session.add(current_user)
+        return redirect(url_for('student.my_packages'))
+    else:
+        flash('Order information error')
+        return redirect(url_for('main.index'))
 
     
 
