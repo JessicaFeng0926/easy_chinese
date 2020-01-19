@@ -1,4 +1,5 @@
 import pytz,json,os
+from datetime import datetime
 
 """ ectimezone_list=[]
 
@@ -18,5 +19,20 @@ with open(r'D:\Python学习\flask_project\easy_chinese\app\static\json\ectimezon
 ectimezone_list=sorted(ectimezone_list,key=lambda x:x[1])
 
 
-      
+# 把数据库里存储的标准时间转化为用户的当地时间
+def get_localtime(database_time,user):
+    '''这是把数据库里存放的时间转化为用户当地时间的函数'''
+    utc = pytz.timezone('UTC')
+    tz = user.timezone
+    if len(tz) ==2:
+        tz = pytz.country_timezones[tz][0]
+    else:
+        tz = pytz.country_timezones[tz[:2]][int(tz[3:])]
+    tz = pytz.timezone(tz)
+    utctime = datetime(database_time.year,database_time.month,database_time.day,database_time.hour,tzinfo=utc)
+    localtime = utctime.astimezone(tz)
+    return localtime
+
+
+
        

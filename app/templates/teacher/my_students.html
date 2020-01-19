@@ -47,7 +47,7 @@ ul.nav-tabs{
                 <td>{{student.username}}</td>
                 <td>{{lesson.teacher.name}}</td>
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
-                <td>{{lesson.status}}</td>
+                <td>{%if lesson.status == 'Not started'%}{%if moment().valueOf()>moment(lesson.time).valueOf()%}<a href="{{url_for('teacher.record_lesson',id=lesson.id)}}">Record</a>{%else%}Not started{%endif%}{%else%}{{lesson.status}}{%endif%}</td>
                 <td>{%if lesson.status == 'Complete' or lesson.status == 'Tea Late'%}<a href="{{url_for('teacher.check_detail',id=lesson.id)}}">[Check]</a>{%endif%} {%if current_user.id == lesson.teacher.id%}<a href="{{url_for("teacher.record_lesson",id=lesson.id)}}">[Modify]</a>{%endif%}</td>
             </tr>
             {%endfor%}
@@ -175,10 +175,10 @@ ul.nav-tabs{
             {%for student in students%}
             <tr>
                 <td><a href="{{url_for('teacher.my_students',tab='lessons',username=student.username)}}">{{student.username}}</a></td>
-                <td>2019-8-30 11:00</td>
-                <td>Regular</td>
-                <td>20</td>
-                <td>11</td>
+                <td>{% if student.local_last_seen%}{{"%s-%s-%s %s:00"|format(student.local_last_seen.year,student.local_last_seen.month,student.local_last_seen.day,student.local_last_seen.hour)}}{%else%}--:--{%endif%}</td>
+                <td>{{student.lesson_type}}</td>
+                <td>{{student.total_finished}}</td>
+                <td>{{student.total_left}}</td>
             </tr>
             {%endfor%}
         </table>
@@ -188,3 +188,8 @@ ul.nav-tabs{
 
 
 {%endblock main%}
+
+{%block scripts%}
+{{super()}}
+{{moment.include_moment()}}
+{%endblock scripts%}
