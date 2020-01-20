@@ -59,7 +59,7 @@ def trial(username):
         worktime=teacher.work_time.first().work_time
         worktime_list = worktime.split(';')
 
-        #把以星期为单位的老师工作时间转化为以UTC的年月日小时为单位的工作时间
+
         #把以星期为单位的老师工作时间转化为以UTC的年月日小时为单位的工作时间
         #第一步：构造出utc的此时此刻
         cal = Calendar(6)
@@ -69,7 +69,7 @@ def trial(username):
         #第二步：计算出可以选课的起始时间，也就是utcnow的24小时后，和截止时间，也就是utcnow的29天后
         available_start = utcnow+timedelta(1)
         available_end = utcnow+timedelta(29)
-        #第三步：找到起始日期所在的星期、结束日期所在的星期，并拼接处包含可以选课的28天的日期列表，列表里的每个元素是一个子列表，子列表是一个以周日开始的星期
+        #第三步：找到起始日期所在的星期、结束日期所在的星期，并拼接出包含可以选课的28天的日期列表，列表里的每个元素是一个子列表，子列表是一个以周日开始的星期
         #找出开始日期所在的星期
         for i,week in enumerate(cal.monthdatescalendar(available_start.year,available_start.month)):
             if available_start.date() in week:
@@ -104,6 +104,11 @@ def trial(username):
         for i in new_worktime_list[:]:
             if i in special_rest_list:
                 new_worktime_list.remove(i)
+        #第七步：把教师的补班时间加到列表里（这一步放在前面，因为可能补班的时间也被选上课了）
+        makeup_time_list=[]
+        for data in teacher.make_up_time.filter_by(expire=False).all():
+            makeup_time_list.append(datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc))
+        new_worktime_list+=makeup_time_list
         #第六步：生成一个已预约的课程时间列表,并把这些时间点从老师的工作时间表中去掉
         lessons = Lesson.query.filter_by(teacher_id = teacher.id,is_delete=False).all()
         #已预约的课程时间列表
@@ -112,16 +117,12 @@ def trial(username):
             time = lesson.time
             time = datetime(time.year,time.month,time.day,time.hour,tzinfo=utc)
             #只关心那些在可选时间范围内的课程
-            if time > available_start:
+            if time >= available_start:
                 lessons_list.append(time)
         for i in new_worktime_list[:]:
             if i in lessons_list:
                 new_worktime_list.remove(i)
-        #第七步：把教师的补班时间加到列表里
-        makeup_time_list=[]
-        for data in teacher.make_up_time.filter_by(expire=False).all():
-            makeup_time_list.append(datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc))
-        new_worktime_list+=makeup_time_list
+        
         
 
         #计算出游客的时区

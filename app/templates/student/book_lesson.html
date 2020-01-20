@@ -1,0 +1,22 @@
+{%extends 'student/homepage.html'%}
+{%block head%}
+{{super()}}
+{%endblock head%}
+
+{%block title%}
+Book A Lesson
+{%endblock title%}
+
+{%block main%}
+{%if teacher%}
+
+{%else%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <div class='panel panel-default'>
+        <div class='panel-body'>
+            <h3>You haven't got a teacher yet. Please wait.</h3>
+        </div>
+    </div><!-- end of panel -->
+</div><!-- end of #main -->
+{%endif%}
+{%endblock main%}

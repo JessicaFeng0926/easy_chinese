@@ -2,11 +2,13 @@ from flask import current_app,url_for,render_template,redirect,flash,request,jso
 from flask_login import current_user,login_required
 from . import student
 from .forms import PersonalInfoForm,StudentRateForm
-from ..models import User,Lesson,Order
+from ..models import User,Lesson,Order,MakeUpTime
 import os
 from ..import db
-from datetime import datetime
+from datetime import datetime,timedelta
 from pytz import country_timezones,timezone
+import calendar
+from calendar import monthcalendar,monthrange,Calendar
 
 #个人信息
 @student.route('/personal_info',methods=['GET','POST'])
@@ -104,4 +106,87 @@ def my_packages():
         order.local_end = local_end
     return render_template('student/my_packages.html',new_orders=new_orders,old_orders=old_orders)
 
+#学生选课
+@student.route('/book_lesson')
+@login_required
+def book_lesson():
+    '''这是学生订课的视图'''
+    # 找到该学生的老师
+    teacher = User.query.filter_by(id=current_user.student_profile.first().teacher_id).first()
+    # 学生可能还没有分配老师，我们只操作分配了老师的情况
+    if teacher:
+        #取出老师的工作时间字符串并转化为列表 
+        worktime=teacher.work_time.first().work_time
+        worktime_list = worktime.split(';')
 
+        #把以星期为单位的教师工作时间转化为UTC年月日小时的时间
+        #第一步：构造出UTC的此时此刻
+        cal = Calendar(6)  # 让每个星期都从星期天开始
+        utc = timezone('UTC')
+        utcnow = datetime.utcnow()
+        utcnow = datetime(utcnow.year,utcnow.month,utcnow.day,utcnow.hour,tzinfo=utc)
+        # 第二步：计算出可以选课的起始时间，也就是此时此刻的24小时后，以及截至时间，也就是现在开始的29天后
+        available_start = utcnow+timedelta(1)
+        available_end = utcnow + timedelta(29)
+        # 第三步：找到起始日期和结束日期所在的星期，拼接出可以选课的28天的列表，
+        # 大列表里的小列表代表一个个以周日开始的星期
+        # 找起始日期所在的星期
+        for i,week in enumerate(cal.monthdatescalendar(available_start.year,available_start.month)):
+            if available_start.date() in week:
+                start_index = i
+                break
+        # 先把目前确定的可以选课的这几个星期放进可选时间列表里
+        all_available_dates = cal.monthdatescalendar(available_start.year,available_start.month)[start_index:]
+        # 找到结束日期所在的星期
+        for i,week in enumerate(cal.monthdatescalendar(available_end.year,available_end.month)):
+            if available_end.date() in week:
+                end_index = i
+                break
+        # 因为开始日期所在的那个月的日历和结束日期所在的那个月的日历可能有重复的星期
+        # 所以我们要避免重复添加
+        for week in cal.monthdatescalendar(available_end.year,available_end.month)[:end_index+1]:
+            if week not in all_available_dates:
+                all_available_dates.append(week)
+
+        # 第四步：根据老师的工作时间，构造出以datetime对象为元素的列表
+        # 创建一个空列表，存放老师的以小时为单位的工作时间
+        new_worktime_list = []
+        for week in all_available_dates:
+            # w是类似于0-1这样的字符串，它表示星期天的UTC时间1点钟
+            for w in worktime_list:
+                date = week[int(w[0])]
+                time = datetime(date.year,date.month,date.day,int(w[2:]),tzinfo=utc)
+                if time<available_start or time>available_end:
+                    continue
+                new_worktime_list.append(time)
+        # 第五步：把教师的特殊休息时间去掉
+        special_rest_set = set()
+        for data in teacher.special_rest.all():
+            special_rest_set.add(datetime(data.rest_time.year,data.rest_time.month,data.rest_time.day,data.rest_time.hour,tzinfo=utc))
+        for i in new_worktime_list[:]:
+            if i in special_rest_set:
+                new_worktime_list.remove(i)
+        # 第六步：把教师的补班时间加进去(这一步要放在前面，因为可能补班的时间也被选上课了)
+        makeup_time_list=[]
+        for data in teacher.make_up_time.filter_by(expire=False).all():
+            makeup_time_list.append(datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc))
+        new_worktime_list+=makeup_time_list
+        # 第七步：生成一个已预约的课程时间列表，并把这些时间从老师的工作时间里去掉
+        # 为了节约资源，我们在查询的时候就筛选一下时间
+        lessons = Lesson.query.filter(Lesson.teacher_id == teacher.id,Lesson.is_delete==False,Lesson.time>=datetime.utcnow()+timedelta(1)).all()
+        # 先用set存放时间，因为查询比较快
+        lessons_set = set()
+        for lesson in lessons:
+            time = lesson.time
+            time = datetime(time.year,time.month,time.day,time.hour,tzinfo=utc)
+            lessons_set.add(time)
+        for i in new_worktime_list[:]:
+            if i in lessons_set:
+                new_worktime_list.remove(i)
+        lessons_list = list(lessons_set)
+        
+
+
+
+
+    return render_template('student/book_lesson.html',teacher=teacher)
