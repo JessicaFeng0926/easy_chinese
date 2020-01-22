@@ -6,7 +6,7 @@
     margin-bottom: 300px;
 }
 
-#cancel:hover{
+.cancel:hover{
     color:blue;
     cursor: pointer;
 }
@@ -43,7 +43,7 @@
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
                 <td>{% if lesson.status == 'Not started' and moment().valueOf()>moment(lesson.time).valueOf() %} Waiting for comment{%else%}{{lesson.status}}{%endif%}</td>
                 <td>{%if lesson.status == 'Not started' and lesson.cancel %}<span class='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
-                <td>{% if moment().valueOf()>moment(lesson.time).valueOf() and not lesson.s_comment %}<a href="{{url_for('student.rate',lesson_id=lesson.id)}}">Do it now</a>{%else%}Done{%endif%}</td>
+                <td>{% if moment().valueOf()>moment(lesson.time).valueOf()%} {% if not lesson.s_comment %}<a href="{{url_for('student.rate',lesson_id=lesson.id)}}">Do it now</a>{%else%}Done{%endif%}{%endif%}</td>
             </tr>
             {%endfor%}
             

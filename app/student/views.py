@@ -1,5 +1,6 @@
 from flask import current_app,url_for,render_template,redirect,flash,request,jsonify
 from flask_login import current_user,login_required
+from flask_sqlalchemy import Pagination
 from . import student
 from .forms import PersonalInfoForm,StudentRateForm
 from ..models import User,Lesson,Order,MakeUpTime
@@ -9,6 +10,7 @@ from datetime import datetime,timedelta
 from pytz import country_timezones,timezone
 import calendar
 from calendar import monthcalendar,monthrange,Calendar
+from tools.ectimezones import get_localtime
 
 #个人信息
 @student.route('/personal_info',methods=['GET','POST'])
@@ -53,6 +55,14 @@ def cancel():
         if (lesson.time-datetime.utcnow()).seconds >= 600:
             lesson.is_delete=True
             db.session.add(lesson)
+            # 还要把课时还到课时包里面
+            # 我们要从最新的课时包开始，找到第一个不满(也就是left_amount<lesson_amount的课时包)，把还给学生的课加到这个包里
+            all_packages = lesson.student.orders.filter(Order.pay_status=='paid').order_by(Order.id.desc()).all()
+            for package in all_packages:
+                if package.left_amount <package.lesson_amount:
+                    package.left_amount += 1
+                    break
+            db.session.add(package)
             return jsonify({'status':'ok'})
         return jsonify({"status":"fail"})
     return jsonify({'status':'fail'})
@@ -130,23 +140,24 @@ def book_lesson():
         available_end = utcnow + timedelta(29)
         # 第三步：找到起始日期和结束日期所在的星期，拼接出可以选课的28天的列表，
         # 大列表里的小列表代表一个个以周日开始的星期
-        # 找起始日期所在的星期
-        for i,week in enumerate(cal.monthdatescalendar(available_start.year,available_start.month)):
-            if available_start.date() in week:
-                start_index = i
-                break
-        # 先把目前确定的可以选课的这几个星期放进可选时间列表里
-        all_available_dates = cal.monthdatescalendar(available_start.year,available_start.month)[start_index:]
-        # 找到结束日期所在的星期
-        for i,week in enumerate(cal.monthdatescalendar(available_end.year,available_end.month)):
-            if available_end.date() in week:
-                end_index = i
-                break
-        # 因为开始日期所在的那个月的日历和结束日期所在的那个月的日历可能有重复的星期
-        # 所以我们要避免重复添加
-        for week in cal.monthdatescalendar(available_end.year,available_end.month)[:end_index+1]:
-            if week not in all_available_dates:
+        start_flag = False
+        all_available_dates = []
+        for week in cal.monthdatescalendar(available_start.year,available_start.month):
+            # 在没找到起始日期所在的星期的时候，要检查这个星期是否就是我们寻找的
+            if not start_flag and available_start.date() in week:
+                start_flag = True
+            # 从找到了起始日期所在的星期开始，我们要把它所在的以及它后面的星期加到列表里
+            if start_flag:
                 all_available_dates.append(week)
+                
+        # 遍历结束日期所在的月，如果当前星期不在列表里，就添加(因为前后两个月可能有重复的星期)
+        # 遇到结束日期所在的星期，后面的就不用看了
+        for week in cal.monthdatescalendar(available_end.year,available_end.month):
+            if available_end not in week:
+                all_available_dates.append(week)
+            if available_end.date() in week:
+                break
+    
 
         # 第四步：根据老师的工作时间，构造出以datetime对象为元素的列表
         # 创建一个空列表，存放老师的以小时为单位的工作时间
@@ -185,8 +196,107 @@ def book_lesson():
                 new_worktime_list.remove(i)
         lessons_list = list(lessons_set)
         
+        #计算出游客的时区
+        visitor_country=current_user.timezone
+        if len(visitor_country)>2:
+            visitor_tz = country_timezones[visitor_country[:2]][int(visitor_country[-1])]
+        else:
+            visitor_tz = country_timezones[visitor_country][0]
+        tz_obj = timezone(visitor_tz)
 
+        # 根据时区，生成游客视角的可以选课的28天的日历
+        visitor_start = get_localtime(available_start,current_user)
+        visitor_end = get_localtime(available_end,current_user)
+        
+        visitor_dates = []
+        start_flag = False
+        for week in cal.monthdatescalendar(visitor_start.year,visitor_start.month):
+            # 因为遍历一个星期也会浪费时间，所以我们这里设两个条件
+            # 如果flag已经是True了，就不需要再看结束日期在不在这个星期里了
+            if not start_flag and visitor_start.date() in week:
+                start_flag = True
+            if start_flag:
+                visitor_dates.append(week)
+        # 因为前后两个月可能有重复的星期，所以要判断是否在列表里，不在的才添加
+        for week in cal.monthdatescalendar(visitor_end.year,visitor_end.month):
+            if week not in visitor_dates:
+                visitor_dates.append(week)
+            # 如果已经到了结束日期所在的星期，就不用看后面的了
+            if visitor_end.date() in week:
+                break
+        
+        # 获取页码
+        page = request.args.get('page',1,type=int)
+        # 如果有用户恶意修改页码，我们要把页码变成1
+        if page>len(visitor_dates) or page<1:
+            page = 1
+        
+        # 每个星期的月份和年，应该以这个星期中间的那一天为标准
+        current_page = Pagination(visitor_dates,page,1,len(visitor_dates),visitor_dates[page-1])
+        middle_day = current_page.items[3]
+        month_name = calendar.month_name[middle_day.month]
+        year = middle_day.year
 
+        this_week = []
+        only_dates = []
 
+        for date in current_page.items:
+            this_week.append('%s-%s-%s'%(date.year,date.month,date.day))
+            only_dates.append(date.day)
+
+        #把老师的可选的时间列表换成游客时区的时间(字符串)
+        for i,time in enumerate(new_worktime_list):
+            time=time.astimezone(tz_obj)
+            new_worktime_list[i]='%s-%s-%s-%s'%(time.year,time.month,time.day,time.hour)
+        #把老师有课的时间转换成游客时区的时间（字符串）
+        for i,time in enumerate(lessons_list):
+            time=time.astimezone(tz_obj)
+            lessons_list[i]='%s-%s-%s-%s'%(time.year,time.month,time.day,time.hour)
+        
+        # 查看并处理选课的ajax请求
+        time = request.args.get('time','',type=str)
+        if time:
+            time = time.split('-')
+            #先构造一个没有时区的datetime对象
+            time = datetime(int(time[0]),int(time[1]),int(time[2]),int(time[3]))
+            #再把它变成时区为游客所在地区的datetime对象
+            time = tz_obj.localize(time)
+            #再把时区变成utc时区
+            time = time.astimezone(utc)
+
+            # 再判断一次是否在可选时间范围内
+            if time>=available_start:
+                # 看看学生的课时包里是否还有课
+                active_package = current_user.orders.filter(Order.pay_status=='paid',Order.left_amount>0).order_by(Order.id.asc()).first()
+                if active_package:
+                    # 课时包的课程数量扣掉一节
+                    active_package.left_amount -= 1
+                    db.session.add(active_package)
+                    # 把选课信息存进数据库
+                    lesson = current_user.lessons.filter(Lesson.time==time,Lesson.teacher_id==teacher.id).first()
+                    if lesson:
+                        lesson.is_delete = False
+                    else:
+                        lesson = Lesson()
+                        lesson.student_id = current_user.id
+                        lesson.teacher_id = teacher.id
+                        lesson.time = time
+                        lesson.message = ''
+                        lesson.lesson_type =active_package.lesson_type
+                    db.session.add(lesson)
+                    return jsonify({'status':'ok','msg':"You've successfully booked a lesson."})
+                else:
+                    return jsonify({'status':'fail','msg':"You don't have any lessons now. Please buy another package."})
+            else:
+                return jsonify({'status':'fail','msg':'You need to book lessons not earlier than 24 hours from now.'})
+        return render_template('student/book_lesson.html',
+        teacher=teacher,
+        this_week=this_week,
+        only_dates=only_dates,
+        new_worktime_list=new_worktime_list,
+        month_name=month_name,
+        year=year,
+        current_page=current_page,
+        lessons_list=lessons_list)
 
     return render_template('student/book_lesson.html',teacher=teacher)

@@ -1,6 +1,44 @@
 {%extends 'student/homepage.html'%}
 {%block head%}
 {{super()}}
+<style>
+
+.table{
+    width:729.6px;
+}
+h3{
+    margin-bottom:20px;
+}
+.available,.available-s{
+    background-color:#5cb85c;
+}
+    
+.available:hover{
+    cursor: pointer;
+}
+    
+.booked,.booked-s{
+    background-color:#d9534f;
+}
+    
+.rest,.rest-s{
+    background-color: white;
+}
+    
+.selected,.selected-s{
+    background-color: #777777;
+}
+    
+.legend{
+    display:inline-block;
+    width:40px;
+    height:20px;
+    border:1px solid #efefef;
+}
+.legend-info{
+    font-size: 16px;
+}
+    </style>
 {%endblock head%}
 
 {%block title%}
@@ -9,6 +47,61 @@ Book A Lesson
 
 {%block main%}
 {%if teacher%}
+<div class='col-sm-6 col-md-8'>
+    <h4>Here is your teacher {{teacher.name}}'s schedule.</h4>
+    <h3 class='text-center'>{{month_name}} , {{year}}</h3>
+    <nav aria-label="...">
+        <ul class="pager">
+          <li {%if current_page.has_prev%}class="previous"{%else%}class='previous disabled'{%endif%}><a {%if current_page.has_prev%}href="{{url_for('student.book_lesson',page=current_page.prev_num)}}"{%endif%}><span aria-hidden="true">&larr;</span>Previous Week</a></li>
+          <li {%if current_page.has_next %}class="next"{%else%}class='next disabled'{%endif%}><a {%if current_page.has_next %}href="{{url_for('student.book_lesson',page=current_page.next_num)}}"{%endif%}>Next Week <span aria-hidden="true">&rarr;</span></a></li>
+        </ul>
+    </nav>
+    <h4>
+        <span class='legend available-s'></span>
+        <span class='legend-info'>available</span>
+        <span class='legend booked-s'></span>
+        <span class='legend-info'>booked</span>
+        <span class='legend rest-s'></span>
+        <span class='legend-info'>unavailable</span>
+        <span class='legend selected-s'></span>
+        <span class='legend-info'>selected</span>
+    </h4>
+    <table class='table'>
+        <tr>
+            <th class='col-md-2 col-sm-1 col-xs-2 text-right'></th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>Sunday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>Monday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>Tuesday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>Wednesday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>Thursday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>Friday</th>
+            <th class='col-md-1 col-sm-1 col-xs-1 text-center'>Saturday</th>
+        </tr>
+        <tr>
+            
+            <th class='col-md-2 col-sm-2 col-xs-2 text-right'></th>
+            {% for date in only_dates%}
+            <th class='col-md-1 col-sm-1 col-xs-1 text-right'>{{date}}</th>
+            {%endfor%}
+        </tr>
+    </table>
+    <table class='table table-bordered'>
+        {% for hour in range(24)%}
+        <tr>
+            
+            <td class='col-md-2 col-sm-2 col-xs-2 text-center'>{{hour}}:00-{{hour}}:50</td>
+            {% for date in this_week%}
+            <td {%if '%s-%s'|format(date,hour) in lessons_list %}class='col-md-1 col-sm-1 col-xs-1 booked'{% elif '%s-%s'|format(date,hour) in new_worktime_list %} class='col-md-1 col-sm-1 col-xs-1 available'{%else%}class='col-md-1 col-sm-1 col-xs-1'{%endif%} id="{{'%s-%s'|format(date,hour)}}"></td>
+            {% endfor %}
+        </tr>
+        {%endfor%}
+    </table> 
+    <!-- end of the schedule -->
+    <div class='form-group text-right'>
+        <button class='btn btn-default' type='button' id='submit'>Submit</button>
+    </div>
+</div>
+<!-- end of the whole right part -->
 
 {%else%}
 <div class='col-sm-8 col-md-8' id='main'>
@@ -20,3 +113,49 @@ Book A Lesson
 </div><!-- end of #main -->
 {%endif%}
 {%endblock main%}
+
+{%block scripts%}
+{{super()}}
+
+<script>
+$(function(){
+    //定义一个变量，上课时间
+    var time = ''
+    //下面是获取上课时间的点击事件
+    $('.available').click(function(){
+        if($(this).attr('class')=="col-md-1 col-sm-1 col-xs-1 available"){
+            time=$(this).attr('id')
+            //当一个时间点变成了选中状态的时候，其他被选中的时间点要变成可选状态，保证一次只能选择一个时间点
+            $('.selected').attr('class','col-md-1 col-sm-1 col-xs-1 available');
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 selected');
+        }else{
+            //点击已经选中的时间点，会取消对它的选择
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 available');
+            time=''
+        }
+    })
+    
+    $('#submit').click(function(){
+        //如果上课时间为空，弹出警告
+        if(time==''){
+            alert("Time is necessary.")
+        }else{ //否则就要提交选课的ajax请求了
+            $.ajax({
+                type:'GET',
+                url:"{{url_for('student.book_lesson')}}",
+                data:{
+                      time:time,
+                },
+                success:function(callback){
+                    alert(callback.msg);
+                    window.location.reload();
+
+                }
+            })//ajax的结尾
+        }//else的结尾
+    })//click的结尾
+
+  
+})
+</script>
+{%endblock scripts%}

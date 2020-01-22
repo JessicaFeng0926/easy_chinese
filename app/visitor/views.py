@@ -71,21 +71,23 @@ def trial(username):
         available_end = utcnow+timedelta(29)
         #第三步：找到起始日期所在的星期、结束日期所在的星期，并拼接出包含可以选课的28天的日期列表，列表里的每个元素是一个子列表，子列表是一个以周日开始的星期
         #找出开始日期所在的星期
-        for i,week in enumerate(cal.monthdatescalendar(available_start.year,available_start.month)):
-            if available_start.date() in week:
-                start_index = i
-                break
-
-        all_available_dates = cal.monthdatescalendar(available_start.year,available_start.month)[start_index:]
-        #找到结束日期所在的星期
-        for i,week in enumerate(cal.monthdatescalendar(available_end.year,available_end.month)):
-            if available_end.date() in week:
-                end_index=i
-                break
-        for week in cal.monthdatescalendar(available_end.year,available_end.month)[:end_index+1]:
-            if week not in all_available_dates:
-                #这个列表就是包含可以选课的28天的日期列表（实际的日期对象一般大于28）
+        start_flag = False
+        all_available_dates = []
+        for week in cal.monthdatescalendar(available_start.year,available_start.month):
+            # 在没找到起始日期所在的星期的时候，要检查这个星期是否就是我们寻找的
+            if not start_flag and available_start.date() in week:
+                start_flag = True
+            # 从找到了起始日期所在的星期开始，我们要把它所在的以及它后面的星期加到列表里
+            if start_flag:
                 all_available_dates.append(week)
+                
+        # 遍历结束日期所在的月，如果当前星期不在列表里，就添加(因为前后两个月可能有重复的星期)
+        # 遇到结束日期所在的星期，后面的就不用看了
+        for week in cal.monthdatescalendar(available_end.year,available_end.month):
+            if available_end not in week:
+                all_available_dates.append(week)
+            if available_end.date() in week:
+                break
 
         #第四步：根据老师的工作时间，构造出以datetime对象为元素的列表
         #这就是我们最终需要的老师以小时为单位的工作时间列表
@@ -104,12 +106,12 @@ def trial(username):
         for i in new_worktime_list[:]:
             if i in special_rest_list:
                 new_worktime_list.remove(i)
-        #第七步：把教师的补班时间加到列表里（这一步放在前面，因为可能补班的时间也被选上课了）
+        #第六步：把教师的补班时间加到列表里（这一步放在前面，因为可能补班的时间也被选上课了）
         makeup_time_list=[]
         for data in teacher.make_up_time.filter_by(expire=False).all():
             makeup_time_list.append(datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc))
         new_worktime_list+=makeup_time_list
-        #第六步：生成一个已预约的课程时间列表,并把这些时间点从老师的工作时间表中去掉
+        #第七步：生成一个已预约的课程时间列表,并把这些时间点从老师的工作时间表中去掉
         lessons = Lesson.query.filter_by(teacher_id = teacher.id,is_delete=False).all()
         #已预约的课程时间列表
         lessons_list = []
@@ -137,37 +139,35 @@ def trial(username):
         visitor_start = datetime(available_start.year,available_start.month,available_start.day,available_start.hour,tzinfo=tz_obj)
         visitor_end = datetime(available_end.year,available_end.month,available_end.day,available_end.hour,tzinfo=tz_obj)
 
-        for i,week in enumerate(cal.monthdatescalendar(visitor_start.year,visitor_start.month)):
-            if visitor_start.date() in week:
-                start_index = i
-                break
-
-        visitor_dates = cal.monthdatescalendar(visitor_start.year,visitor_start.month)[start_index:]
-
-        for i,week in enumerate(cal.monthdatescalendar(visitor_end.year,visitor_end.month)):
-            if visitor_end.date() in week:
-                end_index = i
-                break
-
-        for week in cal.monthdatescalendar(visitor_end.year,visitor_end.month)[:end_index+1]:
-            if week not in visitor_dates:
-                #这就是包含游客能选课的28天的日期列表，时区是游客时区
+        visitor_dates = []
+        start_flag = False
+        for week in cal.monthdatescalendar(visitor_start.year,visitor_start.month):
+            # 因为遍历一个星期也会浪费时间，所以我们这里设两个条件
+            # 如果flag已经是True了，就不需要再看结束日期在不在这个星期里了
+            if not start_flag and visitor_start.date() in week:
+                start_flag = True
+            if start_flag:
                 visitor_dates.append(week)
+        # 因为前后两个月可能有重复的星期，所以要判断是否在列表里，不在的才添加
+        for week in cal.monthdatescalendar(visitor_end.year,visitor_end.month):
+            if week not in visitor_dates:
+                visitor_dates.append(week)
+            # 如果已经到了结束日期所在的星期，就不用看后面的了
+            if visitor_end.date() in week:
+                break
+        
+        # 获取页码
         page = request.args.get('page',1,type=int)
         #如果有用户恶意修改page的数值，使得page超过了我们能接收的范围，我们就是手动让它重新等于1
         if page > len(visitor_dates) or page<1:
             page = 1
         
-        #只有最后一个星期才以截止日期的月份为月份名，前面的几个星期都以开始日期为准
-        if page<len(visitor_dates):
-            month_name = calendar.month_name[visitor_start.month]
-            year = visitor_start.year
-        else:
-            month_name = calendar.month_name[visitor_end.month]
-            year = visitor_end.year
-
+        #每个星期的月份和年份应当以每个星期中间的那一天为标准
         current_page=Pagination(visitor_dates,page,1,len(visitor_dates),visitor_dates[page-1])
-        
+        middle_day = current_page.items[3]
+        month_name = calendar.month_name[middle_day.month]
+        year = middle_day.year
+
         this_week=[]
         only_dates=[]
         for date in current_page.items:
@@ -199,18 +199,30 @@ def trial(username):
             time = tz_obj.localize(time)
             #再把时区变成utc时区
             time = time.astimezone(utc)
-
             #再把课程信息存进数据库
-            lesson = Lesson()
-            lesson.student_id = current_user.id
-            lesson.teacher_id = teacher.id
-            lesson.time = time
-            lesson.message = message
-            lesson.lesson_type = 'Trial'
+            # 先看看学生之前是否已经选过同一时间同一老师的试听课了
+            lesson = current_user.lessons.filter(Lesson.time==time,Lesson.teacher_id==teacher.id).first()
+            if lesson:
+                lesson.is_delete = False
+            else:
+                lesson = Lesson()
+                lesson.student_id = current_user.id
+                lesson.teacher_id = teacher.id
+                lesson.time = time
+                lesson.message = message
+                lesson.lesson_type = 'Trial'
             db.session.add(lesson)
             return jsonify({'status':'ok','msg':"You've successfully booked a trial lesson."})
-    return render_template('visitor/trial.html',this_week=this_week,new_worktime_list=new_worktime_list,only_dates=only_dates,month_name=month_name,year=year,current_page=current_page,teacher=teacher,lessons_list=lessons_list)
-
+        return render_template('visitor/trial.html',
+        this_week=this_week,
+        new_worktime_list=new_worktime_list,
+        only_dates=only_dates,
+        month_name=month_name,
+        year=year,
+        current_page=current_page,
+        teacher=teacher,
+        lessons_list=lessons_list)
+    
 #游客所有课时包视图
 @visitor.route('/my_packages')
 @login_required
