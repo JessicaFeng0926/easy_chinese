@@ -1,9 +1,10 @@
 from flask import request,render_template,url_for,redirect
 from . import main
 from flask_login import login_required,current_user
-from ..models import User,Lesson
+from ..models import User,Lesson,Order
 from pytz import timezone,country_timezones
 from datetime import datetime,timedelta
+from tools.ectimezones import get_localtime
 
 @main.route('/')
 def index():
@@ -92,7 +93,20 @@ def personal_center():
         
         return render_template('teacher/homepage.html',lesson_list=lesson_list)
     elif current_user.role.name == 'Moderator':
-        return render_template('moderator/homepage.html')
+        # 查找最近24小时内入学的新生
+        utcnow = datetime.utcnow()
+        start_time = utcnow-timedelta(1)
+        new_orders = Order.query.filter(Order.pay_status=='paid',Order.pay_time>=start_time).order_by(Order.pay_time.desc()).all()
+        students = {order.student for order in new_orders if order.student.orders.filter_by(pay_status='paid').order_by(Order.pay_time.asc()).first().pay_time>=start_time}
+        students = list(students)
+        for student in students:
+            teacher_id = student.student_profile.first().teacher_id
+            if teacher_id:
+                student.teacher = User.query.get(teacher_id)
+            else:
+                student.teacher = None
+            student.enrollment_time = get_localtime(student.orders.filter_by(pay_status='paid').order_by(Order.pay_time.asc()).first().pay_time,current_user)
+        return render_template('moderator/homepage.html',students=students)
     elif current_user.role.name == 'Administrator':
         return render_template('admin/homepage.html')
 
