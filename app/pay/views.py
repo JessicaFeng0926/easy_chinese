@@ -1,6 +1,6 @@
 from flask import redirect,render_template,request,url_for,jsonify
 from flask_login import login_required,current_user
-from app.models import User,Lesson,Order
+from app.models import User,Lesson,Order,StudentProfile
 from . import pay
 from app import db
 from alipay import AliPay
@@ -156,6 +156,14 @@ def pay_complete(order_id):
         if current_user.role_id == 1:
             current_user.role_id = 2
             db.session.add(current_user)
+            # 给这个学生创建简历
+            new_profile = StudentProfile()
+            new_profile.student_id=current_user.id
+            # 如果订单里面有老师，就建立师生关系，没有就先空着
+            # 协管员会给学生分配老师的。
+            if order.teacher_id:
+                new_profile.teacher_id = order.teacher_id
+            db.session.add(new_profile)
         return redirect(url_for('student.my_packages'))
     else:
         flash('Order information error')

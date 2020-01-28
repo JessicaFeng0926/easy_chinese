@@ -53,6 +53,9 @@ def create_app(config_name):
     from .pay import pay as pay_blueprint
     app.register_blueprint(pay_blueprint,url_prefix='/pay')
     
+    from .moderator import moderator as moderator_blueprint
+    app.register_blueprint(moderator_blueprint,url_prefix='/moderator')
+    
     return app
 
 
