@@ -72,7 +72,7 @@ def my_students():
         utc = timezone('UTC')
         #查看该学生的所有课程
         if tab == 'lessons':
-            lessons = student.lessons.order_by(Lesson.time.desc()).all()
+            lessons = student.lessons.filter_by(is_delete=False).order_by(Lesson.time.desc()).all()
             
             #给每节课添加教师信息，以及根据教师时区转化出的教师当地的上课时间
             for lesson in lessons:
