@@ -78,6 +78,28 @@ def check_detail(lesson_id):
     record = lesson.lesson_record.first()
     return render_template('moderator/check_detail.html',lesson=lesson,record=record)        
 
+# 显示全校学生名单
+@moderator.route('/check_students')
+@login_required
+def check_students():
+    '''这是显示全校学生名单的页面'''
+    students = User.query.filter_by(role_id=2,is_delete=False).order_by(User.username.asc()).all()
+    all_students = []
+    count = 0
+    temp = []
+    for student in students:
+        temp.append(student)
+        count += 1
+        if count == 4:
+            all_students.append(temp)
+            temp = []
+            count = 0
+    if temp:
+        all_students.append(temp)
+
+
+    return render_template('moderator/check_students.html',all_students=all_students)
+
 
 
 

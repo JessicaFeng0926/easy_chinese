@@ -20,7 +20,7 @@ a:hover{
 <div class='col-sm-3 col-md-3' >
     <ul class='nav nav-pills nav-stacked'>
         <li role="presentation" {%if request.path[:11] == '/personal_c' or request.path[:12] == '/moderator/a' %}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">New Students</a></li>
-        <li role='presentation' {%if request.path[:12]=='/moderator/s' or request.path[:12]=='/moderator/c'%}class='active'{%endif%}><a>Check Students</a></li>
+        <li role='presentation' {%if request.path[:12]=='/moderator/s' or request.path[:12]=='/moderator/c'%}class='active'{%endif%}><a href="{{url_for('moderator.check_students')}}">Check Students</a></li>
         <li role="presentation"><a>Change Teacher</a></li>
         <li role="presentation" {%if request.path[:10] == '/teacher/m' or request.path[:10] == '/teacher/e'%}class='active'{%endif%}><a href="#">Book Lessons</a></li>
         <li role="presentation" {%if request.path[:10] == '/teacher/p'%}class='active'{%endif%}><a href="#">Modify Schedule</a></li>    
