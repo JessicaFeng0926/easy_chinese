@@ -188,7 +188,7 @@ def trial(username):
         message = request.form.get('message','',type=str)
         if time and message:
             #如果该游客已经有一节试听课记录了，并且那节试听课是完成或者还未开始的状态，不允许他再次选择试听课
-            trial = Lesson.query.filter_by(student_id=current_user.id,lesson_type='Trial').first()
+            trial = Lesson.query.filter_by(student_id=current_user.id,lesson_type='Trial').order_by(Lesson.time.desc()).first()
             if trial:
                 if trial.status == 'Complete' or trial.status == 'Not started':
                     return jsonify({'status':'fail','msg':"Operation failed.You've already booked a trial lesson."})

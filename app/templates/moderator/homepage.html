@@ -21,8 +21,8 @@ a:hover{
     <ul class='nav nav-pills nav-stacked'>
         <li role="presentation" {%if request.path[:11] == '/personal_c' or request.path[:12] == '/moderator/a' %}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">New Students</a></li>
         <li role='presentation' {%if request.path[:12]=='/moderator/s' or request.path[:14]=='/moderator/che'%}class='active'{%endif%}><a href="{{url_for('moderator.check_students')}}">Check Students</a></li>
-        <li role="presentation" {%if request.path[:12] == '/moderator/p' or request.path[:14] == '/moderator/cha'%}class='active'{%endif%}><a href="{{url_for('moderator.pre_change_teacher')}}">Change Teacher</a></li>
-        <li role="presentation" {%if request.path[:10] == '/teacher/m' or request.path[:10] == '/teacher/e'%}class='active'{%endif%}><a href="#">Book Lessons</a></li>
+        <li role="presentation" {%if request.path[:16] == '/moderator/pre_c' or request.path[:14] == '/moderator/cha'%}class='active'{%endif%}><a href="{{url_for('moderator.pre_change_teacher')}}">Change Teacher</a></li>
+        <li role="presentation" {%if request.path[:16] == '/moderator/pre_b' or request.path[:12] == '/moderator/b' %}class='active'{%endif%}><a href="{{url_for('moderator.pre_book_lesson')}}">Book Lessons</a></li>
         <li role="presentation" {%if request.path[:10] == '/teacher/p'%}class='active'{%endif%}><a href="#">Modify Schedule</a></li>    
         <li role="presentation" {%if request.path[:10] == '/teacher/p'%}class='active'{%endif%}><a href="#">Modify Personal Info</a></li>    
     </ul>
