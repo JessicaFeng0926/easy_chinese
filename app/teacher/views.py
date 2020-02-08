@@ -65,10 +65,10 @@ def my_students():
         student = User.query.filter_by(username=username).first()
         tz = current_user.timezone
         if len(tz) == 2:
-            tz = country_timezones[tz][0]
+            tz_str = country_timezones[tz][0]
         else:
-            tz = country_timezones[tz[:2]][int(tz[3:])]
-        tz = timezone(tz)
+            tz_str = country_timezones[tz[:2]][int(tz[3:])]
+        tz = timezone(tz_str)
         utc = timezone('UTC')
         #查看该学生的所有课程
         if tab == 'lessons':
@@ -87,6 +87,7 @@ def my_students():
             utcsince = datetime(member_since.year,member_since.month,member_since.day,member_since.hour,tzinfo=utc)
             localsince = utcsince.astimezone(tz)
             student.localsince = localsince
+            student.timezone_str = tz_str
             teacher_id = student.student_profile.first().teacher_id
             primary_teacher = User.query.get(teacher_id)
         return render_template('teacher/my_students.html',username=username,student=student,tab=tab,lessons=lessons,primary_teacher=primary_teacher)

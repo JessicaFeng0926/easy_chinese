@@ -64,7 +64,7 @@ def personal_center():
         return render_template('student/homepage.html',lessons=lessons)
     elif current_user.role.name == 'Teacher':
         #查询出24小时内老师的未开始课程
-        lessons = Lesson.query.filter_by(teacher_id = current_user.id,status ='Not started').order_by(Lesson.time.asc()).all()
+        lessons = Lesson.query.filter_by(teacher_id = current_user.id,status ='Not started',is_delete=False).order_by(Lesson.time.desc()).all()
         lesson_list = []
         if lessons :
             utcnow = datetime.utcnow()
