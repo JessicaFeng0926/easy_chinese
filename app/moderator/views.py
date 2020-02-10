@@ -56,6 +56,11 @@ def show_student_profile(username):
             for lesson in lessons:
                 lesson.teacher = User.query.get(lesson.teacher_id)
                 lesson.localtime = get_localtime(lesson.time,current_user)
+                # 开课十分钟前，课程是可以取消的
+                if lesson.time>datetime.utcnow()+timedelta(0,600):
+                    lesson.cancel = True
+                else:
+                    lesson.cancel = False
             return render_template('moderator/student_profile.html',student=student,tab=tab,lessons=lessons,username=username)
         elif tab == 'profile':
             teacher_id = student.student_profile.first().teacher_id
@@ -405,3 +410,28 @@ def book_lesson(student_username,teacher_username):
     else:
         flash('学生或老师有误')
         return redirect(url_for('moderator.pre_book_lesson'))
+
+
+# 取消学生的已选课程
+@moderator.route('/cancel')
+@login_required
+def cancel():
+    '''取消学生的已选课程'''
+    lesson_id = request.args.get("id",0,type=int)
+    if lesson_id:
+        lesson=Lesson.query.get_or_404(lesson_id)
+        #还要看看时间是不是超过10分钟
+        if (lesson.time-datetime.utcnow()).seconds >= 600:
+            lesson.is_delete=True
+            db.session.add(lesson)
+            # 还要把课时还到课时包里面
+            # 我们要从最新的课时包开始，找到第一个不满(也就是left_amount<lesson_amount的课时包)，把还给学生的课加到这个包里
+            all_packages = lesson.student.orders.filter(Order.pay_status=='paid').order_by(Order.id.desc()).all()
+            for package in all_packages:
+                if package.left_amount <package.lesson_amount:
+                    package.left_amount += 1
+                    break
+            db.session.add(package)
+            return jsonify({'status':'ok'})
+        return jsonify({"status":"fail"})
+    return jsonify({'status':'fail'})

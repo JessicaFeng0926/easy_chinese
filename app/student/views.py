@@ -48,9 +48,9 @@ def personal_info():
 @login_required
 def cancel():
     '''取消相应的课程'''
-    id = request.args.get("id",0,type=int)
-    if id:
-        lesson=Lesson.query.get_or_404(id)
+    lesson_id = request.args.get("id",0,type=int)
+    if lesson_id:
+        lesson=Lesson.query.get_or_404(lesson_id)
         #还要看看时间是不是超过10分钟
         if (lesson.time-datetime.utcnow()).seconds >= 600:
             lesson.is_delete=True

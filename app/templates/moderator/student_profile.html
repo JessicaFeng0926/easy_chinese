@@ -16,6 +16,11 @@ ul.nav-tabs{
     height:200px;
 
 }
+
+.cancel:hover{
+    color:blue;
+    cursor: pointer;
+}
 </style>
 {%endblock head%}
 
@@ -35,6 +40,9 @@ ul.nav-tabs{
                 <th>Teacher</th>
                 <th>Time</th>
                 <th>Status</th>
+                <th>Teacher's comment</th>
+                <th>Student's comment</th>
+                <th>Student's rate</th>
                 <th>Details</th>
             </tr>
             {%for lesson in lessons%}
@@ -43,6 +51,9 @@ ul.nav-tabs{
                 <td>{{lesson.teacher.name}}</td>
                 <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
                 <td>{%if lesson.status == 'Not started'%}{%if moment().valueOf()>moment(lesson.time).valueOf()%}Record{%else%}Not started{%endif%}{%else%}{{lesson.status}}{%endif%}</td>
+                <td>{%if lesson.status == 'Not started' and lesson.cancel %}<span class='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
+                <td>{% if moment().valueOf()>moment(lesson.time).valueOf()%} {% if not lesson.s_comment %}Waiting for comment{%else%}{{lesson.s_comment}}{%endif%}{%endif%}</td>
+                <td>{% if moment().valueOf()>moment(lesson.time).valueOf()%} {% if not lesson.s_comment %}Waiting for rate{%else%}{{lesson.mark}}{%endif%}{%endif%}</td>
                 <td>{%if lesson.status == 'Complete' or lesson.status == 'Tea Late'%}<a href="{{url_for('moderator.check_detail',lesson_id=lesson.id)}}">[Check]</a>{%endif%} {%if current_user.id == lesson.teacher.id%}<a href="{{url_for("teacher.record_lesson",id=lesson.id)}}">[Modify]</a>{%endif%}</td>
             </tr>
             {%endfor%}
@@ -160,3 +171,33 @@ ul.nav-tabs{
 </div>
 
 {%endblock main%}
+
+{%block scripts%}
+{{super()}}
+<script>
+$(function(){
+    var cancel=$(".cancel");
+    cancel.bind("click",function(){
+        var id=$(this).attr("lid");
+        var answer=confirm('确定要删除这节课吗？请预先和学生达成一致意见。');
+        if(answer==true){
+            $.ajax({
+            url:"{{url_for('student.cancel')}}",
+            type:"GET",
+            data:{id:id},
+            success:function(callback){
+                if(callback.status=='ok'){
+                    alert("That lesson has been canceled successfully.")
+                    window.location.reload();
+                }else{
+                    alert("Operation failed.");
+                }
+                }
+            })
+        }
+        
+    })
+})
+</script>
+{{moment.include_moment()}}
+{%endblock scripts%}
