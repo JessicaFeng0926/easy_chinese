@@ -261,8 +261,15 @@ def book_lesson(student_username,teacher_username):
         
         # 第六步：把教师的补班时间加进去(这一步要放在前面，因为可能补班的时间也被选上课了)
         makeup_time_list=[]
-        for data in teacher.make_up_time.filter_by(expire=False).all():
-            makeup_time_list.append(datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc))
+        temp = teacher.make_up_time.filter_by(expire=False).all()
+        for data in temp:
+            makeup_time = datetime(data.make_up_time.year,data.make_up_time.month,data.make_up_time.day,data.make_up_time.hour,tzinfo=utc)
+            if makeup_time>=available_start:
+                makeup_time_list.append(makeup_time)
+            # 把已经过期的补班时间的expire字段修改为True
+            else:
+                data.expire = True
+                db.session.add(data)
         new_worktime_list+=makeup_time_list
 
         # 第七步：生成一个已预约的课程时间列表，并把这些时间从老师的工作时间里去掉
