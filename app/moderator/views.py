@@ -4,7 +4,7 @@ from flask import url_for,render_template,redirect,request,flash,jsonify
 from flask_login import current_user,login_required
 from flask_sqlalchemy import Pagination
 from .. models import User,Order,Lesson
-from .forms import AssignTeacherForm,ChangeTeacherForm,PreBookLessonForm
+from .forms import AssignTeacherForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm
 from app import db
 from tools.ectimezones import get_localtime
 from datetime import datetime,timedelta
@@ -442,3 +442,74 @@ def cancel():
             return jsonify({'status':'ok'})
         return jsonify({"status":"fail"})
     return jsonify({'status':'fail'})
+
+# 修改游客、学生、老师个人信息的预处理视图，主要是生成名单
+@moderator.route('/pre_modify_info')
+@login_required
+def pre_modify_info():
+    visitors = User.query.filter_by(role_id=1,is_delete=False).order_by(User.username.asc()).all()
+    all_visitors = []
+    count = 0
+    temp = []
+    for visitor in visitors:
+        temp.append(visitor)
+        count += 1
+        if count == 4:
+            all_visitors.append(temp)
+            temp = []
+            count = 0
+    if temp:
+        all_visitors.append(temp)
+    students = User.query.filter_by(role_id=2,is_delete=False).order_by(User.username.asc()).all()
+    all_students = []
+    count = 0
+    temp = []
+    for student in students:
+        temp.append(student)
+        count += 1
+        if count == 4:
+            all_students.append(temp)
+            temp = []
+            count = 0
+    if temp:
+        all_students.append(temp)
+    teachers = User.query.filter_by(role_id=3,is_delete=False).order_by(User.username.asc()).all()
+    all_teachers = []
+    count = 0
+    temp = []
+    for teacher in teachers:
+        temp.append(teacher)
+        count += 1
+        if count == 4:
+            all_teachers.append(temp)
+            temp = []
+            count = 0
+    if temp:
+        all_teachers.append(temp)
+
+    return render_template('moderator/pre_modify_info.html',all_visitors=all_visitors,all_students=all_students,all_teachers=all_teachers)
+
+# 修改游客、学生、老师的个人信息，主要修改四个数据：
+# 姓名、角色、时区、是否已经被删除
+@moderator.route('/modify_personal_info/<username>',methods=['GET','POST'])
+@login_required
+def modify_personal_info(username):
+    user = User.query.filter_by(username=username,is_delete=False).first()
+    if user and user.role_id in {1,2,3}:
+        form = ModifyPersonalInfoForm()
+        if form.validate_on_submit():
+            user.name = form.name.data
+            user.role_id = int(form.role_id.data)
+            user.timezone = form.timezone.data
+            user.is_delete = form.is_delete.data
+            db.session.add(user)
+            flash('信息修改成功')
+            return redirect(url_for('main.personal_center'))
+        form.username.data = user.username
+        form.name.data = user.name
+        form.role_id.data = str(user.role_id)
+        form.timezone.data = user.timezone
+        form.is_delete.data = False
+        return render_template('moderator/modify_personal_info.html',form=form)
+    flash('用户不存在')
+    return redirect(url_for('main.personal_center'))

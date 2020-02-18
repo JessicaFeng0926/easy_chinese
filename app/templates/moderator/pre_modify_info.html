@@ -1,0 +1,59 @@
+{%extends 'moderator/homepage.html'%}
+{%block head%}
+{{super()}}
+{%endblock head%}
+
+{%block title%}Check Students}{%endblock title%}
+{%block main%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <div class='panel panel-default'>
+        <div class='panel-head'>
+            <h3 class='text-center'>修改用户信息</h3>
+        </div>
+        
+        <div class='panel-body'>
+            {%if all_visitors%}
+            <h4 class='text-center'>游客</h4>
+        
+            <table class='table '>
+                {%for row in all_visitors%}
+                    <tr>
+                        {%for visitor in row%}
+                            <td><a href="{{url_for('moderator.modify_personal_info',username=visitor.username)}}" >{{visitor.username}}</a></td>
+                        {%endfor%}
+                    </tr>
+                    
+                {%endfor%}
+            </table>
+            {%endif%}
+            {%if all_students%}
+            <h4 class='text-center'>学生</h4>
+            <table class='table '>
+                {%for row in all_students%}
+                    <tr>
+                        {%for student in row%}
+                            <td><a href="{{url_for('moderator.modify_personal_info',username=student.username)}}" >{{student.username}}</a></td>
+                        {%endfor%}
+                    </tr>
+                    
+                {%endfor%}
+            </table>
+            {%endif%}
+            {%if all_teachers%}
+            <h4 class='text-center'>教师</h4>
+            <table class='table '>
+                {%for row in all_teachers%}
+                    <tr>
+                        {%for teacher in row%}
+                            <td><a href="{{url_for('moderator.modify_personal_info',username=teacher.username)}}" >{{teacher.name}}</a></td>
+                        {%endfor%}
+                    </tr>
+                    
+                {%endfor%}
+            </table>
+            {%endif%}
+        </div>
+
+    </div>
+</div>
+{%endblock main%}

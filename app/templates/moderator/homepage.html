@@ -24,7 +24,7 @@ a:hover{
         <li role="presentation" {%if request.path[:16] == '/moderator/pre_c' or request.path[:14] == '/moderator/cha'%}class='active'{%endif%}><a href="{{url_for('moderator.pre_change_teacher')}}">Change Teacher</a></li>
         <li role="presentation" {%if request.path[:16] == '/moderator/pre_b' or request.path[:12] == '/moderator/b' %}class='active'{%endif%}><a href="{{url_for('moderator.pre_book_lesson')}}">Book Lessons</a></li>
         <li role="presentation" {%if request.path[:10] == '/teacher/p'%}class='active'{%endif%}><a href="#">Modify Schedule</a></li>    
-        <li role="presentation" {%if request.path[:10] == '/teacher/p'%}class='active'{%endif%}><a href="#">Modify Personal Info</a></li>    
+        <li role="presentation" {%if request.path[:16] == '/moderator/pre_m' or request.path[:12] == '/moderator/m'%}class='active'{%endif%}><a href="{{url_for('moderator.pre_modify_info')}}">Modify Personal Info</a></li>    
     </ul>
 </div>
 
