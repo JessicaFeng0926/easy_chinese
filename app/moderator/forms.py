@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms.fields import StringField,SubmitField,SelectField,BooleanField
+from wtforms.fields import StringField,SubmitField,SelectField,BooleanField,DateTimeField
 from wtforms.validators import Required,Length
 from tools.teacher_list import teacher_list
 from tools.visitor_student_list import visitor_student_list
@@ -36,3 +36,27 @@ class ModifyPersonalInfoForm(FlaskForm):
     timezone = SelectField(label='时区',choices=ectimezone_list,validators=[Required()])
     is_delete = BooleanField(label='已删除',false_values=('False',))
     submit = SubmitField(label='提交')
+
+
+class PreModifyScheduleForm(FlaskForm):
+    '''这是修改教师工作时间的预处理视图'''
+    teacher = SelectField(label='教师',choices=teacher_list)
+    time_type = SelectField(label='时间类型',choices=[['1','临时休息'],['2','补班'],['3','修改常规工作时间']])
+    submit = SubmitField(label='提交')
+
+
+class RestTimeForm(FlaskForm):
+    '''这是临时休息时间表单'''
+    teacher = StringField(label='教师',render_kw={'readonly':True})
+    rest_type = SelectField(label='休息类型',choices=[['off','请假'],['meet','会议'],['lieu','调休']])
+    start = DateTimeField(label='起始时间',validators=[Required()],description='格式:2008-8-18 8:00:00,请以你自己所在时区为准')
+    end = DateTimeField(label='结束时间',validators=[Required()],description='格式:2008-8-18 9:00:00,请你以自己所在时区为准')
+    submit = SubmitField(label='提交')
+
+class MakeupTimeForm(FlaskForm):
+    '''这是补班时间表单'''
+    teacher = StringField(label='教师',render_kw={'readonly':True})
+    start = DateTimeField(label='起始时间',validators=[Required()],description='格式:2008-8-18 8:00:00,请以你自己所在时区为准')
+    end = DateTimeField(label='结束时间',validators=[Required()],description='格式:2008-8-18 8:00:00,请以你自己所在时区为准')
+    submit = SubmitField(label='提交')
+

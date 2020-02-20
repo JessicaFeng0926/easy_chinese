@@ -3,10 +3,10 @@ from . import moderator
 from flask import url_for,render_template,redirect,request,flash,jsonify
 from flask_login import current_user,login_required
 from flask_sqlalchemy import Pagination
-from .. models import User,Order,Lesson
-from .forms import AssignTeacherForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm
+from .. models import User,Order,Lesson,SpecialRest,MakeUpTime
+from .forms import AssignTeacherForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm,PreModifyScheduleForm,RestTimeForm,MakeupTimeForm
 from app import db
-from tools.ectimezones import get_localtime
+from tools.ectimezones import get_localtime,get_utctime
 from datetime import datetime,timedelta
 from pytz import country_timezones,timezone
 import calendar
@@ -512,4 +512,87 @@ def modify_personal_info(username):
         form.is_delete.data = False
         return render_template('moderator/modify_personal_info.html',form=form)
     flash('用户不存在')
+    return redirect(url_for('main.personal_center'))
+
+
+# 修改教师的工作时间的预处理视图
+@moderator.route('/pre_modify_schedule',methods=['GET','POST'])
+@login_required
+def pre_modify_schedule():
+    form = PreModifyScheduleForm()
+    if form.validate_on_submit():
+        return redirect(url_for('moderator.modify_schedule',username=form.teacher.data,time_type=form.time_type.data))
+    return render_template('moderator/pre_modify_schedule.html',form=form)
+
+# 修改教师的工作时间
+@moderator.route('/modify_schedule/<username>/<time_type>',methods=['GET','POST'])
+@login_required
+def modify_schedule(username,time_type):
+    '''根据协管员提交的教师用户名和要修改的时间类型来处理
+    :参数 username:教师的用户名
+    :参数 time_type:要修改的时间类型
+    '''
+    teacher = User.query.filter_by(username=username,is_delete=False).first()
+    if teacher:
+        # 设置临时休息时间
+        if time_type == '1':
+            form = RestTimeForm()
+            if form.validate_on_submit():
+                available_start = datetime.utcnow()+timedelta(1)
+                if form.end.data<=form.start.data or form.start.data<available_start:
+                    flash('起始时间或结束时间有误')
+                    return redirect(url_for('moderator.modify_schedule',username=username,time_type=time_type))
+                else:
+                    # 保存到数据库里,假设开始时间是9点，结束时间是11点
+                    # 那就要保存9点和10点这两个时间点
+                    time = form.start.data
+                    end = form.end.data
+                    while time<end:
+                        naive_utctime = get_utctime(time,current_user)
+                        sr = SpecialRest.query.filter_by(rest_time=naive_utctime,teacher_id = teacher.id,type=form.rest_type.data).first()
+                        if not sr:
+                            sr = SpecialRest()
+                            sr.rest_time = naive_utctime
+                            sr.teacher_id = teacher.id
+                            sr.type = form.rest_type.data
+                        sr.expire = False
+                        db.session.add(sr)
+                        time = time+timedelta(seconds=3600)
+                    flash('休息时间设置成功')
+                    return redirect(url_for('main.personal_center'))
+            form.teacher.data = teacher.name
+            return render_template('moderator/modify_schedule.html',form=form,username=username,time_type=time_type)
+        # 设置临时的补班时间
+        elif time_type == '2':
+            form = MakeupTimeForm()
+            if form.validate_on_submit():
+                available_start = datetime.utcnow()+timedelta(1)
+                if form.end.data<=form.start.data or form.start.data<available_start:
+                    flash('起始时间或结束时间有误')
+                    return redirect(url_for('moderator.modify_schedule',username=username,time_type=time_type))
+                else:
+                    # 把数据保存到数据库里面
+                    time = form.start.data
+                    end = form.end.data
+                    while time<end:
+                        naive_utctime = get_utctime(time,current_user)
+                        mt = MakeUpTime.query.filter_by(make_up_time=naive_utctime,teacher_id = teacher.id).first()
+                        if not mt:
+                            mt = MakeUpTime()
+                            mt.make_up_time = naive_utctime
+                            mt.teacher_id = teacher.id
+                        mt.expire = False
+                        db.session.add(mt)
+                        time = time+timedelta(seconds=3600)
+                    flash('补班时间设置成功')
+                    return redirect(url_for('main.personal_center'))
+            form.teacher.data = teacher.name
+            return render_template('moderator/modify_schedule.html',form=form,username=username,time_type=time_type)
+        # 修改老师的常规工作时间
+        elif time_type == '3':
+            pass
+        else:
+            flash('修改时间类型有误')
+            return redirect(url_for('main.personal_center'))
+    flash('教师不存在')
     return redirect(url_for('main.personal_center'))

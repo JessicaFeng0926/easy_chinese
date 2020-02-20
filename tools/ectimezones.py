@@ -33,6 +33,24 @@ def get_localtime(database_time,user):
     localtime = utctime.astimezone(tz)
     return localtime
 
+# 把用户提交的自己视角的naive time转化为可以存储至数据库的UTC视角的naive time
+def get_utctime(naive_localtime,user):
+    '''从用户视角转化为UTC视角
+    : 参数 naive_localtime:datetime对象，没有时区信息，但是以用户所在时区为标准
+    : 参数 user:用户
+    '''
+    utc = pytz.timezone('UTC')
+    tz = user.timezone
+    if len(tz) ==2:
+        tz = pytz.country_timezones[tz][0]
+    else:
+        tz = pytz.country_timezones[tz[:2]][int(tz[3:])]
+    tz = pytz.timezone(tz)
+    localtime = naive_localtime.astimezone(tz)
+    utctime = localtime.astimezone(utc)
+    utctime = datetime(utctime.year,utctime.month,utctime.day,utctime.hour)
+    return utctime
+    
 
 
        
