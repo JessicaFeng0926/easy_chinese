@@ -590,7 +590,10 @@ def modify_schedule(username,time_type):
             return render_template('moderator/modify_schedule.html',form=form,username=username,time_type=time_type)
         # 修改老师的常规工作时间
         elif time_type == '3':
-            pass
+            # 查询这位老师的工作时间
+            worktime = teacher.work_time.first().work_time
+            worktime_list = worktime.split(';')
+            return render_template('moderator/modify_schedule.html',username=username,time_type=time_type,teacher=teacher,worktime_list=worktime_list)
         else:
             flash('修改时间类型有误')
             return redirect(url_for('main.personal_center'))
