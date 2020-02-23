@@ -3,7 +3,7 @@ from . import moderator
 from flask import url_for,render_template,redirect,request,flash,jsonify
 from flask_login import current_user,login_required
 from flask_sqlalchemy import Pagination
-from .. models import User,Order,Lesson,SpecialRest,MakeUpTime
+from .. models import User,Order,Lesson,SpecialRest,MakeUpTime,WorkTime
 from .forms import AssignTeacherForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm,PreModifyScheduleForm,RestTimeForm,MakeupTimeForm
 from app import db
 from tools.ectimezones import get_localtime,get_utctime
@@ -590,12 +590,90 @@ def modify_schedule(username,time_type):
             return render_template('moderator/modify_schedule.html',form=form,username=username,time_type=time_type)
         # 修改老师的常规工作时间
         elif time_type == '3':
-            # 查询这位老师的工作时间
+            # 查询这位老师的工作时间，它们是UTC时间，还要转化为协管员时区的时间
             worktime = teacher.work_time.first().work_time
             worktime_list = worktime.split(';')
+            # 让每个星期从星期天开始
+            cal = Calendar(6)
+            # 随便获取一个完整的naive的星期的日期
+            week = cal.monthdatescalendar(2020,2)[0]
+            # 获取utc时区对象
+            utc = timezone('UTC')
+            # 获取协管员时区对象
+            moderator_country=current_user.timezone
+            if len(moderator_country)>2:
+                moderator_tz = country_timezones[moderator_country[:2]][int(moderator_country[-1])]
+            else:
+                moderator_tz = country_timezones[moderator_country][0]
+            tz_obj = timezone(moderator_tz)
+            # 用来存放按照这个星期来看，用户视角的上课时间（年月日小时）
+            temp = []
+            for w in worktime_list:
+                date = week[int(w[0])]
+                time = datetime(date.year,date.month,date.day,int(w[2:]),tzinfo=utc)
+                time = time.astimezone(tz_obj)
+                temp.append(time)
+            # datetime里的6代表星期天，也就是我定义的0，这里用一个字典来保存这种映射关系
+            weekday_map = {6:0,0:1,1:2,2:3,3:4,4:5,5:6}
+            # 清空worktime_list列表，用于存储用户视角的常规工作时间
+            worktime_list = []
+            for time in temp:
+                # 依然要把每个工作时间点变成0-1的形式，存进列表
+                worktime_list.append(str(weekday_map[time.weekday()])+'-'+str(time.hour))
             return render_template('moderator/modify_schedule.html',username=username,time_type=time_type,teacher=teacher,worktime_list=worktime_list)
         else:
             flash('修改时间类型有误')
             return redirect(url_for('main.personal_center'))
     flash('教师不存在')
     return redirect(url_for('main.personal_center'))
+
+# 设置教师的常规工作时间
+@moderator.route('/modify_worktime',methods=['GET','POST'])
+@login_required
+def modify_worktime():
+    '''设置教师的常规工作时间'''
+    new_worktime = request.form.get('new_worktime','',type=str)
+    username = request.form.get('username','',type=str)
+    teacher = User.query.filter_by(username=username,role_id=3,is_delete=False).first()
+    if teacher:
+        # 把工作时间字符串变成列表
+        new_worktime_list = new_worktime.split(';')
+        # 上面是协管员视角的时间，还要转化为UTC时间，才能存储
+        # 让每个星期从星期天开始
+        cal = Calendar(6)
+        # 随便获取一个完整的naive的星期的日期
+        week = cal.monthdatescalendar(2020,2)[0]
+        # 获取utc时区对象
+        utc = timezone('UTC')
+        # 获取协管员时区对象
+        moderator_country=current_user.timezone
+        if len(moderator_country)>2:
+            moderator_tz = country_timezones[moderator_country[:2]][int(moderator_country[-1])]
+        else:
+            moderator_tz = country_timezones[moderator_country][0]
+        tz_obj = timezone(moderator_tz) 
+        # 用来存放按照这个星期来看，UTC的上课时间（年月日小时）
+        temp = []
+        for w in new_worktime_list:
+            date = week[int(w[0])]
+            time = datetime(date.year,date.month,date.day,int(w[2:]))
+            time = time.astimezone(tz_obj)
+            time = time.astimezone(utc)
+            temp.append(time)
+        # datetime里的6代表星期天，也就是我定义的0，这里用一个字典来保存这种映射关系
+        weekday_map = {6:0,0:1,1:2,2:3,3:4,4:5,5:6}
+        # 清空worktime_list列表，用于存储UTC的常规工作时间
+        new_worktime_list = []
+        for time in temp:
+            # 依然要把每个工作时间点变成0-1的形式，存进列表
+            new_worktime_list.append(str(weekday_map[time.weekday()])+'-'+str(time.hour))
+        new_worktime_list.sort()
+        new_worktime = ';'.join(new_worktime_list)
+        # 查询出worktime表中该老师对应的对象，把更新保存到数据库中
+        # 如果老师还没有这个对象，那就新建
+        work_time = teacher.work_time.first() or WorkTime()
+        work_time.work_time = new_worktime
+        work_time.teacher_id = teacher.id
+        db.session.add(work_time)
+        return jsonify({'msg':'已经成功设置了教师时间'})
+    return jsonify({'msg':'信息有误，请重试'})

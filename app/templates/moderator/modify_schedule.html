@@ -48,7 +48,7 @@
         </div>
         {%elif time_type=='3'%}
         <div class='panel-head'>
-            <h4>&nbsp;下面是{{teacher.name}}老师的工作时间表</h4>
+            <h4>&nbsp;下面是{{teacher.name}}老师的工作时间表，以你的时区为准</h4>
             <h3 class='text-center'>修改教师常规工作时间</h3>
         </div>
         <div class='panel-body'>
@@ -91,3 +91,59 @@
 
 </div>
 {%endblock main%}
+{%block scripts%}
+{{super()}}
+<script>
+$(function(){
+    //定义一个变量，新的工作时间
+    var new_worktime = ''
+    //定义点击事件，休息时间一点击就变成了工作时间，工作时间一点击，就变成了休息时间
+    $('.rest').click(function(){
+        if($(this).attr('class')=='col-md-1 col-sm-1 col-xs-1 rest'){
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 selected');
+        }
+        else{
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 rest');
+        }
+    })
+    $('.selected').click(function(){
+        if($(this).attr('class')=='col-md-1 col-sm-1 col-xs-1 selected'){
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 rest');
+        }
+        else{
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 selected');
+        }
+        
+    })
+    //定义提交按钮的点击事件
+    $('#submit').click(function(){
+        //查出所有的处于选中状态的单元格，把它们的id拼接到一起
+        selected_list = $('.selected');
+        if (selected_list.length>0){
+            new_worktime = $(selected_list[0]).attr('id');
+            if(selected_list.length>1){
+                for(i=1;i<selected_list.length;i++){
+                    new_worktime += ';';
+                    new_worktime += $(selected_list[i]).attr('id');
+                }
+            }
+        }
+        $.ajax({
+            type:'POST',
+            url:"{{url_for('moderator.modify_worktime')}}",
+            data:{
+                new_worktime:new_worktime,
+                username:"{{username}}",
+            },
+            success:function(callback){
+                alert(callback.msg);
+                window.location.reload();
+               
+            }
+        })//ajax的结尾
+        
+        
+    })//submit的click事件的结尾
+})
+</script>
+{%endblock scripts%}
