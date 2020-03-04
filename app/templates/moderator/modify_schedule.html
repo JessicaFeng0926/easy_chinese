@@ -86,6 +86,34 @@
                 <button class='btn btn-default' type='button' id='submit'>提交</button>
                 </div>
             </div>
+        {%elif time_type=='4'%}
+        <div class='panel-head'>
+            <h3 class='text-center'>下面是{{teacher.name}}老师的休息时间</h3>
+        </div>
+        <div class='panel-body'>
+            <table class='table'>
+                {%for sr in special_rest_list%}
+                <tr>
+                    <td>{{"%s-%s-%s %s:00"|format(sr.localtime.year,sr.localtime.month,sr.localtime.day,sr.localtime.hour)}}</td>
+                    <td><a href="{{url_for('moderator.cancel_time',username=teacher.username,time_type='4',time_id=sr.id)}}">取消</a></td>
+                </tr>
+                {%endfor%}
+            </table>
+        </div>
+        {%elif time_type=='5'%}
+        <div class='panel-head'>
+            <h3 class='text-center'>下面是{{teacher.name}}老师的补班时间</h3>
+        </div>
+        <div class='panel-body'>
+            <table class='table'>
+                {%for mt in makeup_time_list%}
+                <tr>
+                    <td>{{'%s-%s-%s %s:00'|format(mt.localtime.year,mt.localtime.month,mt.localtime.day,mt.localtime.hour)}}</td>
+                    <td><a href="{{url_for('moderator.cancel_time',username=teacher.username,time_type='5',time_id=mt.id)}}">取消</a></td>
+                </tr>
+                {%endfor%}
+            </table>
+        </div>
         {%endif%}
     </div>
 

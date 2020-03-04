@@ -41,7 +41,7 @@ class ModifyPersonalInfoForm(FlaskForm):
 class PreModifyScheduleForm(FlaskForm):
     '''这是修改教师工作时间的预处理视图'''
     teacher = SelectField(label='教师',choices=teacher_list)
-    time_type = SelectField(label='时间类型',choices=[['1','临时休息'],['2','补班'],['3','修改常规工作时间']])
+    time_type = SelectField(label='时间类型',choices=[['1','临时休息'],['2','补班'],['3','修改常规工作时间'],['4','取消休息'],['5','取消补班']])
     submit = SubmitField(label='提交')
 
 

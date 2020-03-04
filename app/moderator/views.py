@@ -253,7 +253,7 @@ def book_lesson(student_username,teacher_username):
         
         # 第五步：把教师的特殊休息时间去掉
         special_rest_set = set()
-        for data in teacher.special_rest.all():
+        for data in teacher.special_rest.filter_by(expire=False).all():
             special_rest_set.add(datetime(data.rest_time.year,data.rest_time.month,data.rest_time.day,data.rest_time.hour,tzinfo=utc))
         for i in new_worktime_list[:]:
             if i in special_rest_set:
@@ -621,6 +621,18 @@ def modify_schedule(username,time_type):
                 # 依然要把每个工作时间点变成0-1的形式，存进列表
                 worktime_list.append(str(weekday_map[time.weekday()])+'-'+str(time.hour))
             return render_template('moderator/modify_schedule.html',username=username,time_type=time_type,teacher=teacher,worktime_list=worktime_list)
+        # 取消休息
+        elif time_type == '4':
+            special_rest_list = teacher.special_rest.filter_by(expire=False).order_by(SpecialRest.rest_time.asc()).all()
+            for sr in special_rest_list:
+                sr.localtime = get_localtime(sr.rest_time,current_user)
+            return render_template('moderator/modify_schedule.html',username=username,time_type=time_type,special_rest_list=special_rest_list,teacher=teacher)
+        # 取消补班
+        elif time_type == '5':
+            makeup_time_list = teacher.make_up_time.filter_by(expire=False).order_by(MakeUpTime.make_up_time.asc()).all()
+            for mt in makeup_time_list:
+                mt.localtime = get_localtime(mt.make_up_time,current_user)
+            return render_template('moderator/modify_schedule.html',username=username,time_type=time_type,makeup_time_list=makeup_time_list,teacher=teacher)
         else:
             flash('修改时间类型有误')
             return redirect(url_for('main.personal_center'))
@@ -677,3 +689,26 @@ def modify_worktime():
         db.session.add(work_time)
         return jsonify({'msg':'已经成功设置了教师时间'})
     return jsonify({'msg':'信息有误，请重试'})
+
+# 取消休息或者补班时间
+@moderator.route('/cancel_time/<username>/<time_type>/<time_id>')
+@login_required
+def cancel_time(username,time_type,time_id):
+    '''这是取消教师的休息或者补班时间的视图
+
+    username:教师的用户名
+    time_type:可能是4或者5,4代表取消休息时间，5代表取消补班时间
+    time_id:这是取消的时间数据在数据库里的id
+    '''
+    if time_type == '4':
+        sr = SpecialRest.query.get(int(time_id))
+        sr.expire = True
+        db.session.add(sr)
+        flash('教师休息时间已取消')
+        return redirect(url_for('moderator.modify_schedule',username=username,time_type=time_type))
+    elif time_type == '5':
+        mt = MakeUpTime.query.get(int(time_id))
+        mt.expire = True
+        db.session.add(mt)
+        flash('教师补班时间已取消')
+        return redirect(url_for('moderator.modify_schedule',username=username,time_type=time_type))
