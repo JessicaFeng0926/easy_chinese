@@ -253,8 +253,14 @@ def book_lesson(student_username,teacher_username):
         
         # 第五步：把教师的特殊休息时间去掉
         special_rest_set = set()
-        for data in teacher.special_rest.filter_by(expire=False).all():
-            special_rest_set.add(datetime(data.rest_time.year,data.rest_time.month,data.rest_time.day,data.rest_time.hour,tzinfo=utc))
+        temp = teacher.special_rest.filter_by(expire=False).all()
+        for data in temp:
+            rest_time = datetime(data.rest_time.year,data.rest_time.month,data.rest_time.day,data.rest_time.hour,tzinfo=utc)
+            if rest_time>=available_start:
+                special_rest_set.add(rest_time)
+            else:
+                data.expire = True
+                db.session.add(data)
         for i in new_worktime_list[:]:
             if i in special_rest_set:
                 new_worktime_list.remove(i)

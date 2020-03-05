@@ -100,11 +100,17 @@ def trial(username):
                     continue
                 new_worktime_list.append(time)
         #第五步：把教师的特殊休息时间从列表中去除
-        special_rest_list = []
-        for data in teacher.special_rest.all():
-            special_rest_list.append(datetime(data.rest_time.year,data.rest_time.month,data.rest_time.day,data.rest_time.hour,tzinfo=utc))
+        special_rest_set = set()
+        temp = teacher.special_rest.filter_by(expire=False).all()
+        for data in temp:
+            rest_time = datetime(data.rest_time.year,data.rest_time.month,data.rest_time.day,data.rest_time.hour,tzinfo=utc)
+            if rest_time>=available_start:
+                special_rest_set.add(rest_time)
+            else:
+                data.expire = True
+                db.session.add(data)
         for i in new_worktime_list[:]:
-            if i in special_rest_list:
+            if i in special_rest_set:
                 new_worktime_list.remove(i)
         #第六步：把教师的补班时间加到列表里（这一步放在前面，因为可能补班的时间也被选上课了）
         makeup_time_list=[]
