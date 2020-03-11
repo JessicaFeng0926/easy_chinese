@@ -4,7 +4,7 @@ from flask import url_for,render_template,redirect,request,flash,jsonify
 from flask_login import current_user,login_required
 from flask_sqlalchemy import Pagination
 from .. models import User,Order,Lesson,SpecialRest,MakeUpTime,WorkTime
-from .forms import AssignTeacherForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm,PreModifyScheduleForm,RestTimeForm,MakeupTimeForm
+from .forms import AssignTeacherForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm,PreModifyScheduleForm,RestTimeForm,MakeupTimeForm,PersonalInfoForm
 from app import db
 from tools.ectimezones import get_localtime,get_utctime
 from datetime import datetime,timedelta
@@ -718,3 +718,27 @@ def cancel_time(username,time_type,time_id):
         db.session.add(mt)
         flash('教师补班时间已取消')
         return redirect(url_for('moderator.modify_schedule',username=username,time_type=time_type))
+
+
+# 协管员的个人信息
+@moderator.route('/personal_info',methods=['GET','POST'])
+@login_required
+def personal_info():
+    '''协管员的个人信息，主要是为了修改自己的时区信息'''
+    form = PersonalInfoForm()
+    if form.validate_on_submit():
+        user = current_user._get_current_object()
+        user.name = form.name.data
+        user.location = form.location.data
+        user.timezone = form.timezone.data
+        db.session.add(user)
+        flash('成功修改个人信息')
+        return redirect(url_for('moderator.personal_info'))
+    form.email.data = current_user.email
+    form.username.data = current_user.username
+    form.name.data = current_user.name
+    form.location.data = current_user.location
+    form.timezone.data = current_user.timezone
+    local_member_since = get_localtime(current_user.member_since,current_user)
+    form.member_since.data = local_member_since.strftime('%Y-%m-%d')
+    return render_template('moderator/personal_info.html',form=form)

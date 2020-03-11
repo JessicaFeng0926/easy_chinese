@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms.fields import StringField,SubmitField,SelectField,BooleanField,DateTimeField
-from wtforms.validators import Required,Length
+from wtforms.validators import Required,Length,Email
 from tools.teacher_list import teacher_list
 from tools.visitor_student_list import visitor_student_list
 from tools.ectimezones import ectimezone_list
@@ -60,3 +60,11 @@ class MakeupTimeForm(FlaskForm):
     end = DateTimeField(label='结束时间',validators=[Required()],description='格式:2008-8-18 8:00:00,请以你自己所在时区为准')
     submit = SubmitField(label='提交')
 
+class PersonalInfoForm(FlaskForm):
+    name=StringField(label='Your real name',validators=[Required(),Length(1,64)])
+    location=StringField(label='Location',validators=[Length(0,64)],render_kw={'placeholder':'i.e. New York,US'})
+    timezone=SelectField(label='Timezone',validators=[Required()],choices=ectimezone_list,description='Timezone is very important to booking lessons,please be careful.')
+    username=StringField(label='Username',render_kw={'readonly':True},validators=[Required()])
+    email=StringField(label='Email',validators=[Required(),Email()],render_kw={'readonly':True})
+    member_since=StringField(label='Member since',validators=[Required()],render_kw={'readonly':True})
+    submit=SubmitField(label='Submit')

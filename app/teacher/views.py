@@ -17,9 +17,6 @@ def personal_info():
     form = PersonalInfoForm()
     if form.validate_on_submit():
         user = current_user._get_current_object()
-        user.name = form.name.data
-        user.location = form.location.data
-        user.timezone = form.timezone.data
         if 'image' in request.files:
             file = request.files['image']
             if file:
@@ -27,9 +24,33 @@ def personal_info():
                 cleaned_filename = User.validate_image(file.filename)
                 file.save(os.path.join(UPLOAD_FOLDER,cleaned_filename))
                 user.image = cleaned_filename
-        db.session.add(user)
-        flash('Successfully modified your personal information')
-        return redirect(url_for('teacher.personal_info'))
+                user.name = form.name.data
+                user.location = form.location.data
+                user.timezone = form.timezone.data
+                flash('Successfully modified your personal imformation')
+                return redirect(url_for('teacher.personal_info'))                
+            else:
+                if user.image:
+                    user.name = form.name.data
+                    user.location = form.location.data
+                    user.timezone = form.timezone.data
+                    flash('Successfully modified your personal information')
+                    return redirect(url_for('teacher.personal_info'))
+                else:
+                    flash('教师头像不能为空')
+                    return redirect(url_for('teacher.personal_info'))
+        else:
+            if user.image:
+                user.name = form.name.data
+                user.location = form.location.data
+                user.timezone = form.timezone.data
+                db.session.add(user)
+                flash('Successfully modified your personal information')
+                return redirect(url_for('teacher.personal_info'))
+            else:
+                flash('教师头像不能为空')
+                return redirect(url_for('teacher.personal_info'))
+        
     form.email.data = current_user.email
     form.username.data = current_user.username
     form.name.data = current_user.name

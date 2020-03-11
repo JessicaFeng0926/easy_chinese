@@ -6,7 +6,7 @@ from tools.ectimezones import ectimezone_list
 
 class PersonalInfoForm(FlaskForm):
     '''这是教师个人信息的表单'''
-    image=FileField(label='Image',validators=[Required()])
+    image=FileField(label='Image')
     name=StringField(label='Your real name',validators=[Required(),Length(1,64)])
     location=StringField(label='Location',validators=[Length(0,64)],render_kw={'placeholder':'i.e. New York,US'})
     timezone=SelectField(label='Timezone',validators=[Required()],choices=ectimezone_list,description='Timezone is very important to booking lessons,please be careful.')
