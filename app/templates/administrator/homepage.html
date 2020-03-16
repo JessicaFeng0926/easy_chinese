@@ -1,0 +1,59 @@
+{%extends 'base.html'%}
+{%block head%}
+{{super()}}
+<style>
+    #main{
+        margin-bottom: 300px;
+    }
+    a:hover{
+        cursor: pointer;
+    }
+    </style>
+{%endblock head%}
+
+{%block title%}Personal Center{%endblock title%}
+
+{%block page_content%}
+<div class='page-header'>
+    <h1>Personal Center</h1>
+</div>
+
+<div class='col-sm-3 col-md-3' >
+    <ul class='nav nav-pills nav-stacked'>
+        <li role="presentation" {%if request.path[:11] == '/personal_c'%}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">New Students</a></li>
+        <li role="presentation" {%if request.path[:18] == '/administrator/per'%} class='active' {%endif%}><a href="{{url_for('administrator.personal_info')}}">Personal Information</a></li>    
+    </ul>
+</div>
+
+{%block main%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <div class='panel panel-default'>
+        {%if students%}
+        <div class='panel-head'>
+            <h3 class='text-center'>新生名单</h3>
+        </div>
+        
+        <table class='table'>
+            <tr>
+                <th>学生</th>
+                <th>入学时间</th>
+                <th>老师</th>
+            </tr>
+            {%for student in students%}
+            <tr>
+                <td><a href="{{url_for('moderator.show_student_profile',username=student.username,tab='lessons')}}">{{student.username}}</a></td>
+                <td>{{"%s-%s-%s %s:00"|format(student.enrollment_time.year,student.enrollment_time.month,student.enrollment_time.day,student.enrollment_time.hour)}}</td>
+                <td>{%if student.teacher%}<a>{{student.teacher.name}}</a>{%else%}<a href="{{url_for('moderator.assign_teacher',username=student.username)}}" class='btn btn-primary'>分配老师</a>{%endif%}</td>
+            </tr>
+            {%endfor%}
+        </table>
+        {%else%}
+        <div class='panel-body'>
+            <h3>过去24小时内没有新生入学。</h3>
+        </div>
+        {%endif%}
+    </div>
+
+</div>
+{%endblock main%}
+{%endblock page_content%}

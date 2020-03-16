@@ -55,6 +55,9 @@ def create_app(config_name):
     
     from .moderator import moderator as moderator_blueprint
     app.register_blueprint(moderator_blueprint,url_prefix='/moderator')
+
+    from .administrator import administrator as administrator_blueprint
+    app.register_blueprint(administrator_blueprint,url_prefix='/administrator')
     
     return app
 
