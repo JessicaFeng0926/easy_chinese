@@ -1,0 +1,29 @@
+{%extends 'administrator/homepage.html'%}
+
+{%block head%}
+{{super()}}
+{%endblock head%}
+
+{%block title%}Change Teacher{%endblock title%}
+
+{%block main%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <div class='panel panel-default'>
+        <div class='panel-head'>
+            <h3 class='text-center'>更换老师</h3>
+        </div>
+        <div class='panel-body'>
+            <table class='table'>
+                {%for row in all_students%}
+                    <tr>
+                        {%for student in row%}
+                        <td><a href="{{url_for('administrator.change_teacher',username=student.username)}}">{{student.username}}</a></td>
+                        {%endfor%}
+                    </tr>
+                {%endfor%}
+            </table>
+
+        </div>
+    </div>
+</div>
+{%endblock main%}

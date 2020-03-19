@@ -21,6 +21,8 @@
 <div class='col-sm-3 col-md-3' >
     <ul class='nav nav-pills nav-stacked'>
         <li role="presentation" {%if request.path[:11] == '/personal_c' or request.path[:16]=='/administrator/a'%}class='active'{%endif%}><a href="{{url_for('main.personal_center')}}">New Students</a></li>
+        <li role='presentation' {%if request.path[:18]=='/administrator/che' or request.path[:18]=='/administrator/sho'%}class='active'{%endif%}><a href="{{url_for('administrator.check_students')}}">Check Students</a></li>
+        <li role="presentation" {%if request.path[:20] == '/administrator/pre_c' or request.path[:18] == '/administrator/cha'%}class='active'{%endif%}><a href="{{url_for('administrator.pre_change_teacher')}}">Change Teacher</a></li>
         <li role="presentation" {%if request.path[:18] == '/administrator/per'%} class='active' {%endif%}><a href="{{url_for('administrator.personal_info')}}">Personal Information</a></li>    
     </ul>
 </div>

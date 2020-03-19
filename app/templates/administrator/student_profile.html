@@ -1,0 +1,204 @@
+{%extends 'administrator/homepage.html'%}
+
+{%block head%}
+{{super()}}
+<style>
+footer{
+    margin-top: 200px;
+}
+
+ul.nav-tabs{
+    margin-bottom: 20px;
+}
+
+#user-image{
+    width:200px;
+    height:200px;
+
+}
+
+.cancel:hover{
+    color:blue;
+    cursor: pointer;
+}
+</style>
+{%endblock head%}
+
+{%block title%}Student Profile{%endblock title%}
+
+{%block main%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <ul class="nav nav-tabs">
+        <li role="presentation" {%if tab == 'lessons'%}class="active"{%endif%}><a href="{{url_for('administrator.show_student_profile',username=username,tab='lessons')}}">Lessons</a></li>
+        <li role="presentation"{%if tab == 'profile'%}class='active'{%endif%}><a href="{{url_for('administrator.show_student_profile',username=username,tab='profile')}}">Profile</a></li>
+    </ul>
+    {%if tab =='lessons'%}
+    <div class = 'panel panel-default'>
+        <table class='table'>
+            <tr>
+                <th>Student</th>
+                <th>Teacher</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Teacher's comment</th>
+                <th>Student's comment</th>
+                <th>Student's rate</th>
+                <th>Details</th>
+            </tr>
+            {%for lesson in lessons%}
+            <tr>
+                <td>{{student.username}}</td>
+                <td>{{lesson.teacher.name}}</td>
+                <td>{{"%s-%s-%s %s:00"|format(lesson.localtime.year,lesson.localtime.month,lesson.localtime.day,lesson.localtime.hour)}}</td>
+                <td>{%if lesson.status == 'Not started'%}{%if moment().valueOf()>moment(lesson.time).valueOf()%}Record{%else%}Not started{%endif%}{%else%}{{lesson.status}}{%endif%}</td>
+                <td>{%if lesson.status == 'Not started' and lesson.cancel %}<span class='cancel' lid={{lesson.id}}>[Cancel]</span>{%endif%}{%if lesson.t_comment %}{{lesson.t_comment}}{%endif%}</td>
+                <td>{% if moment().valueOf()>moment(lesson.time).valueOf()%} {% if not lesson.s_comment %}Waiting for comment{%else%}{{lesson.s_comment}}{%endif%}{%endif%}</td>
+                <td>{% if moment().valueOf()>moment(lesson.time).valueOf()%} {% if not lesson.s_comment %}Waiting for rate{%else%}{{lesson.mark}}{%endif%}{%endif%}</td>
+                <td>{%if lesson.status == 'Complete' or lesson.status == 'Tea Late'%}<a href="{{url_for('administrator.check_detail',lesson_id=lesson.id)}}">[Check]</a>{%endif%} {%if current_user.id == lesson.teacher.id%}<a href="{{url_for("teacher.record_lesson",id=lesson.id)}}">[Modify]</a>{%endif%}</td>
+            </tr>
+            {%endfor%}
+        </table>
+    </div>
+    {%elif tab=='profile'%}
+    <div class='panel panel-default'>
+        <div class='panel-heading text-center'>
+            <strong>基本信息</strong> 
+        </div>
+        <div class='panel-body'>
+            <div class='col-sm-6 col-md-5 col-lg-4'>
+            <img {%if student.image %}src="{{url_for('static',filename='media/'+student.image)}}" {%else%}src="{{url_for('static',filename='img/noimage.jpg')}}" {%endif%}class='img-thumbnail' id='user-image'>
+            </div><!-- end of image -->
+            <div class='col-sm-5 col-md-6 col-lg-7'>
+                <table class='table'>
+                    <tr>
+                        <td><strong>用户名</strong></td>
+                        <td>{{student.username}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>姓名</strong></td>
+                        <td>{{student.name}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>邮箱</strong></td>
+                        <td>{{student.email}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>地址</strong></td>
+                        <td>{{student.location}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>时区</strong></td>
+                        <td>{{student.timezone_str}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>课程类型</strong></td>
+                        <td>Regular</td>
+                    </tr>
+                    <tr>
+                        <td><strong>注册时间</strong></td>
+                        <td>{{"%s-%s-%s"|format(student.localsince.year,student.localsince.month,student.localsince.day)}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>最后一次上课</strong></td>
+                        <td>2 weeks ago</td>
+                    </tr>
+                </table>
+            </div>
+        </div><!-- end of panel body -->
+    </div><!-- end of panel -->
+
+    <div class='panel panel-default'>
+        <div class='panel-heading text-center'>
+            <strong>主管老师的补充信息</strong>
+        </div>
+        <div class='panel-body'>
+            <table class='table'>
+                <tr>
+                    <td><strong>称呼</strong></td>
+                    <td>{{student.student_profile.first().nickname}}</td>
+                    <td><strong>性别</strong></td>
+                    <td>{{student.student_profile.first().gender}}</td>
+                </tr>
+                <tr>
+                    <td><strong>年龄</strong></td>
+                    <td>{{student.student_profile.first().age}}</td>
+                    <td><strong>工作情况</strong></td>
+                    <td>{{student.student_profile.first().job}}</td>
+                </tr>
+                <tr>
+                    <td><strong>家庭情况</strong></td>
+                    <td>{{student.student_profile.first().family}}</td>
+                    <td><strong>性格特点</strong></td>
+                    <td>{{student.student_profile.first().personality}}</td>
+                </tr>
+                <tr>
+                    <td><strong>兴趣爱好</strong></td>
+                    <td>{{student.student_profile.first().hobby}}</td>
+                    <td><strong>禁忌话题</strong></td>
+                    <td>{{student.student_profile.first().taboo}}</td>
+                </tr>
+                <tr>
+                    <td><strong>学习原因</strong></td>
+                    <td>{{student.student_profile.first().reason}}</td>
+                    <td><strong>学习目标</strong></td>
+                    <td>{{student.student_profile.first().goal}}</td>
+                </tr>
+                <tr>
+                    <td><strong>当前水平</strong></td>
+                    <td>{{student.student_profile.first().level}}</td>
+                    <td><strong>学习能力</strong></td>
+                    <td>{{student.student_profile.first().ability}}</td>
+                </tr>
+                <tr>
+                    <td><strong>是否需要笔记或录音</strong></td>
+                    <td>{{student.student_profile.first().notes}}</td>
+                    <td><strong>是否需要作业</strong></td>
+                    <td>{{student.student_profile.first().homework}}</td>
+                </tr>
+                <tr>
+                    <td><strong>主管老师</strong></td>
+                    <td>{{student.teacher.name}}</td>
+                    <td><strong>主管老师电话</strong></td>
+                    <td>{{student.student_profile.first().teacher_phone}}</td>
+                </tr>
+
+            </table>
+        </div>
+
+    </div>
+
+    {%endif%}
+</div>
+
+{%endblock main%}
+
+
+{%block scripts%}
+{{super()}}
+<script>
+$(function(){
+    var cancel=$(".cancel");
+    cancel.bind("click",function(){
+        var id=$(this).attr("lid");
+        var answer=confirm('确定要删除这节课吗？请预先和学生达成一致意见。');
+        if(answer==true){
+            $.ajax({
+            url:"{{url_for('student.cancel')}}",
+            type:"GET",
+            data:{id:id},
+            success:function(callback){
+                if(callback.status=='ok'){
+                    alert("That lesson has been canceled successfully.")
+                    window.location.reload();
+                }else{
+                    alert("Operation failed.");
+                }
+                }
+            })
+        }
+        
+    })
+})
+</script>
+{{moment.include_moment()}}
+{%endblock scripts%}
