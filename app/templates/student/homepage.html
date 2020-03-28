@@ -58,6 +58,8 @@
 {{super()}}
 <script>
 $(function(){
+    //获取csrftoken
+    var csrftoken = '{{csrf_token()}}'
     var cancel=$(".cancel");
     cancel.bind("click",function(){
         var id=$(this).attr("lid");
@@ -65,8 +67,9 @@ $(function(){
         if(answer==true){
             $.ajax({
             url:"{{url_for('student.cancel')}}",
-            type:"GET",
+            type:"POST",
             data:{id:id},
+            headers:{'X-CSRFToken':csrftoken},
             success:function(callback){
                 if(callback.status=='ok'){
                     alert("That lesson has been canceled successfully.")

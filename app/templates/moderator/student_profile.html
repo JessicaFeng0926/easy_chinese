@@ -176,15 +176,18 @@ ul.nav-tabs{
 {{super()}}
 <script>
 $(function(){
+    // 获取csrftoken
+    var csrftoken = '{{csrf_token()}}'
     var cancel=$(".cancel");
     cancel.bind("click",function(){
         var id=$(this).attr("lid");
         var answer=confirm('确定要删除这节课吗？请预先和学生达成一致意见。');
         if(answer==true){
             $.ajax({
-            url:"{{url_for('student.cancel')}}",
-            type:"GET",
+            url:"{{url_for('moderator.cancel')}}",
+            type:"POST",
             data:{id:id},
+            headers:{'X-CSRFToken':csrftoken},
             success:function(callback){
                 if(callback.status=='ok'){
                     alert("That lesson has been canceled successfully.")

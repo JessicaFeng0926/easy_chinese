@@ -119,6 +119,8 @@ Book A Lesson
 
 <script>
 $(function(){
+    //获取csrftoken
+    var csrftoken = '{{csrf_token()}}'
     //定义一个变量，上课时间
     var time = ''
     //下面是获取上课时间的点击事件
@@ -141,11 +143,12 @@ $(function(){
             alert("Time is necessary.")
         }else{ //否则就要提交选课的ajax请求了
             $.ajax({
-                type:'GET',
+                type:'POST',
                 url:"{{url_for('student.book_lesson')}}",
                 data:{
                       time:time,
                 },
+                headers:{'X-CSRFToken':csrftoken},
                 success:function(callback){
                     alert(callback.msg);
                     window.location.reload();

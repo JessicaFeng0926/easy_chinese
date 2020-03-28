@@ -350,7 +350,7 @@ def book_lesson(student_username,teacher_username):
             lessons_list[i]='%s-%s-%s-%s'%(time.year,time.month,time.day,time.hour)
         
         # 处理ajax请求
-        time = request.args.get('time','',type=str)
+        time = request.form.get('time','',type=str)
         if time:
             time = time.split('-')
             #先构造一个没有时区的datetime对象
@@ -426,11 +426,11 @@ def book_lesson(student_username,teacher_username):
 
 
 # 取消学生的已选课程
-@moderator.route('/cancel')
+@moderator.route('/cancel',methods=['GET','POST'])
 @login_required
 def cancel():
     '''取消学生的已选课程'''
-    lesson_id = request.args.get("id",0,type=int)
+    lesson_id = request.form.get("id",0,type=int)
     if lesson_id:
         lesson=Lesson.query.get_or_404(lesson_id)
         #还要看看时间是不是超过10分钟

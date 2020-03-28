@@ -125,6 +125,8 @@ h3{
 
 <script>
 $(function(){
+    //获取csrftoken
+    var csrftoken = '{{csrf_token()}}'
     //定义一个变量，上课时间
     var time = ''
     var message = ''
@@ -144,7 +146,7 @@ $(function(){
     
     $('#submit').click(function(){
         message=$('#message').val();
-        console.log(message)
+        
         //如果上课时间或者留言为空，弹出警告
         if(time=='' || message==''){
             alert("Time and message are both necessary.")
@@ -156,6 +158,7 @@ $(function(){
                       time:time,
                       message:message,
                 },
+                headers:{'X-CSRFToken':csrftoken},
                 success:function(callback){
                     alert(callback.msg);
                     window.location.reload();

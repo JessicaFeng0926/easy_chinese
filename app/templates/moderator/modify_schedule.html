@@ -123,6 +123,8 @@
 {{super()}}
 <script>
 $(function(){
+    //定义一个变量，获取token,防止csrf攻击
+    var csrftoken = "{{csrf_token()}}"
     //定义一个变量，新的工作时间
     var new_worktime = ''
     //定义点击事件，休息时间一点击就变成了工作时间，工作时间一点击，就变成了休息时间
@@ -163,6 +165,7 @@ $(function(){
                 new_worktime:new_worktime,
                 username:"{{username}}",
             },
+            headers:{'X-CSRFToken':csrftoken},
             success:function(callback){
                 alert(callback.msg);
                 window.location.reload();

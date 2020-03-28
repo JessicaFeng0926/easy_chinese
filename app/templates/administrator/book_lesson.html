@@ -1,4 +1,4 @@
-{%extends 'moderator/homepage.html'%}
+{%extends 'administrator/homepage.html'%}
 {%block head%}
 {{super()}}
 <style>
@@ -105,7 +105,7 @@
 {{super()}}
 <script>
     $(function(){
-        // 获取csrftoken
+        //获取csrftoken
         var csrftoken = '{{csrf_token()}}'
         //定义一个变量，上课时间
         var time = ''
@@ -130,7 +130,7 @@
             }else{ //否则就要提交选课的ajax请求了
                 $.ajax({
                     type:'POST',
-                    url:"{{url_for('moderator.book_lesson',student_username=student.username,teacher_username=teacher.username)}}",
+                    url:"{{url_for('administrator.book_lesson',student_username=student.username,teacher_username=teacher.username)}}",
                     data:{
                           time:time,
                     },

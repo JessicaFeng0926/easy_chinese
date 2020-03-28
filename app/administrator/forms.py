@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms.fields import StringField,SubmitField,SelectField
+from wtforms.fields import StringField,SubmitField,SelectField,BooleanField
 from wtforms.validators import Required,Length,Email
 from tools.ectimezones import ectimezone_list
 from tools.teacher_list1 import teacher_list1
+from tools.visitor_student_list1 import visitor_student_list1
 
 
 
@@ -30,4 +31,19 @@ class ChangeTeacherForm(FlaskForm):
     old_teachers = StringField(label='过去的老师',render_kw={'readonly':True})
     current_teacher = StringField(label='现任主管老师',render_kw={'readonly':True})
     new_teacher = SelectField(label='新主管老师',choices=teacher_list1,validators=[Required()])
+    submit = SubmitField(label='提交')
+
+class PreBookLessonForm(FlaskForm):
+    '''这是帮助学生选课的预处理表单类'''
+    student = SelectField(label='学生',choices=visitor_student_list1,validators=[Required()])
+    teacher = SelectField(label='老师',choices=teacher_list1,validators=[Required()])
+    submit = SubmitField(label='提交')
+
+class ModifyPersonalInfoForm(FlaskForm):
+    '''这是修改游客、学生和老师的信息的表单类'''
+    username = StringField(label='用户名',render_kw={'readonly':True})
+    name = StringField(label='姓名',validators=[Length(0,64)])
+    role_id = SelectField(label='角色',choices=[['1','游客'],['2','学生'],['3','教师'],['4','协管员']])
+    timezone = SelectField(label='时区',choices=ectimezone_list,validators=[Required()])
+    is_delete = BooleanField(label='已删除',false_values=('False',))
     submit = SubmitField(label='提交')
