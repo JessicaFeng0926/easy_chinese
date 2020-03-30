@@ -1,0 +1,180 @@
+{%extends 'administrator/homepage.html'%}
+{% import 'bootstrap/wtf.html' as wtf%}
+{%block head%}
+{{super()}}
+<style>
+    .rest,.selected:hover{
+    cursor: pointer;
+}
+
+    .rest,.rest-s{
+    background-color: white;
+}
+
+.selected,.selected-s{
+    background-color: #5cb85c;
+}
+.legend{
+    display:inline-block;
+    width:40px;
+    height:20px;
+    border:1px solid #efefef;
+}
+
+.legend-info{
+    font-size: 16px;
+}
+</style>
+{%endblock head%}
+
+{%block title%}Change Teacher{%endblock title%}
+
+{%block main%}
+<div class='col-sm-8 col-md-8' id='main'>
+    <div class='panel panel-default'>
+        {%if time_type=='1'%}
+        <div class='panel-head'>
+            <h3 class='text-center'>设置教师休息时间</h3>
+        </div>
+        <div class='panel-body'>
+            {{wtf.quick_form(form)}}
+        </div>
+        {%elif time_type=='2'%}
+        <div class='panel-head'>
+            <h3 class='text-center'>设置教师补班时间</h3>
+        </div>
+        <div class='panel-body'>
+            {{wtf.quick_form(form)}}
+        </div>
+        {%elif time_type=='3'%}
+        <div class='panel-head'>
+            <h4>&nbsp;下面是{{teacher.name}}老师的工作时间表，以你的时区为准</h4>
+            <h3 class='text-center'>修改教师常规工作时间</h3>
+        </div>
+        <div class='panel-body'>
+            <h4>
+                <span class='legend rest-s'></span>
+                <span class='legend-info'>休息</span>
+                <span class='legend selected-s'></span>
+                <span class='legend-info'>工作</span>
+            
+            </h4>
+            <table class='table'>
+                <tr>
+                    <th class='col-md-2 col-sm-1 col-xs-2 text-right'></th>
+                    <th class='col-md-1 col-sm-1 col-xs-1 text-right'>周日</th>
+                    <th class='col-md-1 col-sm-1 col-xs-1 text-right'>周一</th>
+                    <th class='col-md-1 col-sm-1 col-xs-1 text-right'>周二</th>
+                    <th class='col-md-1 col-sm-1 col-xs-1 text-right'>周三</th>
+                    <th class='col-md-1 col-sm-1 col-xs-1 text-center'>周四</th>
+                    <th class='col-md-1 col-sm-1 col-xs-1 text-center'>周五</th>
+                    <th class='col-md-1 col-sm-1 col-xs-1 text-center'>周六</th>
+                </tr>
+            </table>
+            <table class='table table-bordered'>
+                {%for hour in range(24)%}
+                    <tr>
+                        <td class='col-md-2 col-sm-2 col-xs-2 text-center'>{{hour}}:00-{{hour}}:50</td>
+                        {%for day in range(7)%}
+                        <td {% if '%s-%s'|format(day,hour) in worktime_list%}class='col-md-1 col-sm-1 col-xs-1 selected'{%else%}class='col-md-1 col-sm-1 col-xs-1 rest'{%endif%} id={{day}}-{{hour}}></td>
+                        {%endfor%}
+                    </tr>
+                {%endfor%}
+             
+            </table>
+            <div class='form-group text-right'>
+                <button class='btn btn-default' type='button' id='submit'>提交</button>
+                </div>
+            </div>
+        {%elif time_type=='4'%}
+        <div class='panel-head'>
+            <h3 class='text-center'>下面是{{teacher.name}}老师的休息时间</h3>
+        </div>
+        <div class='panel-body'>
+            <table class='table'>
+                {%for sr in special_rest_list%}
+                <tr>
+                    <td>{{"%s-%s-%s %s:00"|format(sr.localtime.year,sr.localtime.month,sr.localtime.day,sr.localtime.hour)}}</td>
+                    <td><a href="{{url_for('administrator.cancel_time',username=teacher.username,time_type='4',time_id=sr.id)}}">取消</a></td>
+                </tr>
+                {%endfor%}
+            </table>
+        </div>
+        {%elif time_type=='5'%}
+        <div class='panel-head'>
+            <h3 class='text-center'>下面是{{teacher.name}}老师的补班时间</h3>
+        </div>
+        <div class='panel-body'>
+            <table class='table'>
+                {%for mt in makeup_time_list%}
+                <tr>
+                    <td>{{'%s-%s-%s %s:00'|format(mt.localtime.year,mt.localtime.month,mt.localtime.day,mt.localtime.hour)}}</td>
+                    <td><a href="{{url_for('administrator.cancel_time',username=teacher.username,time_type='5',time_id=mt.id)}}">取消</a></td>
+                </tr>
+                {%endfor%}
+            </table>
+        </div>
+        {%endif%}
+    </div>
+
+</div>
+{%endblock main%}
+{%block scripts%}
+{{super()}}
+<script>
+$(function(){
+    //定义一个变量，获取token,防止csrf攻击
+    var csrftoken = "{{csrf_token()}}"
+    //定义一个变量，新的工作时间
+    var new_worktime = ''
+    //定义点击事件，休息时间一点击就变成了工作时间，工作时间一点击，就变成了休息时间
+    $('.rest').click(function(){
+        if($(this).attr('class')=='col-md-1 col-sm-1 col-xs-1 rest'){
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 selected');
+        }
+        else{
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 rest');
+        }
+    })
+    $('.selected').click(function(){
+        if($(this).attr('class')=='col-md-1 col-sm-1 col-xs-1 selected'){
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 rest');
+        }
+        else{
+            $(this).attr('class','col-md-1 col-sm-1 col-xs-1 selected');
+        }
+        
+    })
+    //定义提交按钮的点击事件
+    $('#submit').click(function(){
+        //查出所有的处于选中状态的单元格，把它们的id拼接到一起
+        selected_list = $('.selected');
+        if (selected_list.length>0){
+            new_worktime = $(selected_list[0]).attr('id');
+            if(selected_list.length>1){
+                for(i=1;i<selected_list.length;i++){
+                    new_worktime += ';';
+                    new_worktime += $(selected_list[i]).attr('id');
+                }
+            }
+        }
+        $.ajax({
+            type:'POST',
+            url:"{{url_for('administrator.modify_worktime')}}",
+            data:{
+                new_worktime:new_worktime,
+                username:"{{username}}",
+            },
+            headers:{'X-CSRFToken':csrftoken},
+            success:function(callback){
+                alert(callback.msg);
+                window.location.reload();
+               
+            }
+        })//ajax的结尾
+        
+        
+    })//submit的click事件的结尾
+})
+</script>
+{%endblock scripts%}

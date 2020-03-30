@@ -2,10 +2,10 @@ from . import administrator
 
 from flask import url_for,render_template,redirect,request,flash,jsonify
 from flask_login import login_required,current_user
-from .forms import AssignTeacherForm,PersonalInfoForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm
-from tools.ectimezones import get_localtime
+from .forms import AssignTeacherForm,PersonalInfoForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm,PreModifyScheduleForm,RestTimeForm,MakeupTimeForm
+from tools.ectimezones import get_localtime,get_utctime
 from app import db
-from ..models import User,Order,Lesson
+from ..models import User,Order,Lesson,SpecialRest,MakeUpTime
 from datetime import datetime,timedelta
 from pytz import country_timezones,timezone
 from calendar import Calendar
@@ -442,7 +442,7 @@ def book_lesson(student_username,teacher_username):
     
     else:
         flash('学生或老师有误')
-        return redirect(url_for('moderator.pre_book_lesson'))
+        return redirect(url_for('administrator.pre_book_lesson'))
 
 
 # 取消已选的课程
@@ -540,3 +540,203 @@ def modify_personal_info(username):
     flash('用户不存在')
     return redirect(url_for('main.personal_center'))
 
+
+# 修改教师工作时间的预处理视图
+@administrator.route('/pre_modify_schedule',methods=['GET','POST'])
+@login_required
+def pre_modify_schedule():
+    form = PreModifyScheduleForm()
+    if form.validate_on_submit():
+        return redirect(url_for('administrator.modify_schedule',username=form.teacher.data,time_type=form.time_type.data))
+    return render_template('administrator/pre_modify_schedule.html',form=form)
+
+# 修改教师的工作时间
+@administrator.route('/modify_schedule/<username>/<time_type>',methods=['GET','POST'])
+@login_required
+def modify_schedule(username,time_type):
+    '''根据管理员提交的教师用户名和要修改的时间类型来处理
+
+    :参数 username:教师的用户名
+    :参数 time_type:要修改的时间类型
+    '''
+    teacher = User.query.filter_by(username=username,is_delete=False).first()
+    if teacher:
+        # 设置临时休息时间
+        if time_type == '1':
+            form = RestTimeForm()
+            if form.validate_on_submit():
+                available_start = datetime.utcnow()+timedelta(1)
+                if form.end.data<=form.start.data or form.start.data<available_start:
+                    flash('起始时间或结束时间有误')
+                    return redirect(url_for('administrator.modify_schedule',username=username,time_type=time_type))
+                else:
+                    # 保存到数据库里,假设开始时间是9点，结束时间是11点
+                    # 那就要保存9点和10点这两个时间点
+                    time = form.start.data
+                    end = form.end.data
+                    while time<end:
+                        naive_utctime = get_utctime(time,current_user)
+                        sr = SpecialRest.query.filter_by(rest_time=naive_utctime,teacher_id = teacher.id,type=form.rest_type.data).first()
+                        if not sr:
+                            sr = SpecialRest()
+                            sr.rest_time = naive_utctime
+                            sr.teacher_id = teacher.id
+                            sr.type = form.rest_type.data
+                        sr.expire = False
+                        db.session.add(sr)
+                        time = time+timedelta(seconds=3600)
+                    flash('休息时间设置成功')
+                    return redirect(url_for('administrator.modify_schedule',username=username,time_type='4'))
+            form.teacher.data = teacher.name
+            return render_template('administrator/modify_schedule.html',form=form,username=username,time_type=time_type)
+        # 设置临时的补班时间
+        elif time_type == '2':
+            form = MakeupTimeForm()
+            if form.validate_on_submit():
+                available_start = datetime.utcnow()+timedelta(1)
+                if form.end.data<=form.start.data or form.start.data<available_start:
+                    flash('起始时间或结束时间有误')
+                    return redirect(url_for('administrator.modify_schedule',username=username,time_type=time_type))
+                else:
+                    # 把数据保存到数据库里面
+                    time = form.start.data
+                    end = form.end.data
+                    while time<end:
+                        naive_utctime = get_utctime(time,current_user)
+                        mt = MakeUpTime.query.filter_by(make_up_time=naive_utctime,teacher_id = teacher.id).first()
+                        if not mt:
+                            mt = MakeUpTime()
+                            mt.make_up_time = naive_utctime
+                            mt.teacher_id = teacher.id
+                        mt.expire = False
+                        db.session.add(mt)
+                        time = time+timedelta(seconds=3600)
+                    flash('补班时间设置成功')
+                    return redirect(url_for('administrator.modify_schedule',username=username,time_type='5'))
+            form.teacher.data = teacher.name
+            return render_template('administrator/modify_schedule.html',form=form,username=username,time_type=time_type)
+        # 修改老师的常规工作时间
+        elif time_type == '3':
+            # 查询这位老师的工作时间，它们是UTC时间，还要转化为协管员时区的时间
+            worktime = teacher.work_time.first().work_time
+            worktime_list = worktime.split(';')
+            # 让每个星期从星期天开始
+            cal = Calendar(6)
+            # 随便获取一个完整的naive的星期的日期
+            week = cal.monthdatescalendar(2020,2)[0]
+            # 获取utc时区对象
+            utc = timezone('UTC')
+            # 获取协管员时区对象
+            moderator_country=current_user.timezone
+            if len(moderator_country)>2:
+                moderator_tz = country_timezones[moderator_country[:2]][int(moderator_country[-1])]
+            else:
+                moderator_tz = country_timezones[moderator_country][0]
+            tz_obj = timezone(moderator_tz)
+            # 用来存放按照这个星期来看，用户视角的上课时间（年月日小时）
+            temp = []
+            for w in worktime_list:
+                date = week[int(w[0])]
+                time = datetime(date.year,date.month,date.day,int(w[2:]),tzinfo=utc)
+                time = time.astimezone(tz_obj)
+                temp.append(time)
+            # datetime里的6代表星期天，也就是我定义的0，这里用一个字典来保存这种映射关系
+            weekday_map = {6:0,0:1,1:2,2:3,3:4,4:5,5:6}
+            # 清空worktime_list列表，用于存储用户视角的常规工作时间
+            worktime_list = []
+            for time in temp:
+                # 依然要把每个工作时间点变成0-1的形式，存进列表
+                worktime_list.append(str(weekday_map[time.weekday()])+'-'+str(time.hour))
+            return render_template('administrator/modify_schedule.html',username=username,time_type=time_type,teacher=teacher,worktime_list=worktime_list)
+        # 取消休息
+        elif time_type == '4':
+            special_rest_list = teacher.special_rest.filter_by(expire=False).order_by(SpecialRest.rest_time.asc()).all()
+            for sr in special_rest_list:
+                sr.localtime = get_localtime(sr.rest_time,current_user)
+            return render_template('administrator/modify_schedule.html',username=username,time_type=time_type,special_rest_list=special_rest_list,teacher=teacher)
+        # 取消补班
+        elif time_type == '5':
+            makeup_time_list = teacher.make_up_time.filter_by(expire=False).order_by(MakeUpTime.make_up_time.asc()).all()
+            for mt in makeup_time_list:
+                mt.localtime = get_localtime(mt.make_up_time,current_user)
+            return render_template('administrator/modify_schedule.html',username=username,time_type=time_type,makeup_time_list=makeup_time_list,teacher=teacher)
+        else:
+            flash('修改时间类型有误')
+            return redirect(url_for('main.personal_center'))
+    flash('教师不存在')
+    return redirect(url_for('main.personal_center'))
+
+
+# 修改教师的常规工作时间
+@administrator.route('/modify_worktime',methods=['GET','POST'])
+@login_required
+def modify_worktime():
+    '''设置教师的常规工作时间'''
+    new_worktime = request.form.get('new_worktime','',type=str)
+    username = request.form.get('username','',type=str)
+    teacher = User.query.filter_by(username=username,role_id=3,is_delete=False).first()
+    if teacher:
+        # 把工作时间字符串变成列表
+        new_worktime_list = new_worktime.split(';')
+        # 上面是协管员视角的时间，还要转化为UTC时间，才能存储
+        # 让每个星期从星期天开始
+        cal = Calendar(6)
+        # 随便获取一个完整的naive的星期的日期
+        week = cal.monthdatescalendar(2020,2)[0]
+        # 获取utc时区对象
+        utc = timezone('UTC')
+        # 获取协管员时区对象
+        moderator_country=current_user.timezone
+        if len(moderator_country)>2:
+            moderator_tz = country_timezones[moderator_country[:2]][int(moderator_country[-1])]
+        else:
+            moderator_tz = country_timezones[moderator_country][0]
+        tz_obj = timezone(moderator_tz) 
+        # 用来存放按照这个星期来看，UTC的上课时间（年月日小时）
+        temp = []
+        for w in new_worktime_list:
+            date = week[int(w[0])]
+            time = datetime(date.year,date.month,date.day,int(w[2:]))
+            time = time.astimezone(tz_obj)
+            time = time.astimezone(utc)
+            temp.append(time)
+        # datetime里的6代表星期天，也就是我定义的0，这里用一个字典来保存这种映射关系
+        weekday_map = {6:0,0:1,1:2,2:3,3:4,4:5,5:6}
+        # 清空worktime_list列表，用于存储UTC的常规工作时间
+        new_worktime_list = []
+        for time in temp:
+            # 依然要把每个工作时间点变成0-1的形式，存进列表
+            new_worktime_list.append(str(weekday_map[time.weekday()])+'-'+str(time.hour))
+        new_worktime_list.sort()
+        new_worktime = ';'.join(new_worktime_list)
+        # 查询出worktime表中该老师对应的对象，把更新保存到数据库中
+        # 如果老师还没有这个对象，那就新建
+        work_time = teacher.work_time.first() or WorkTime()
+        work_time.work_time = new_worktime
+        work_time.teacher_id = teacher.id
+        db.session.add(work_time)
+        return jsonify({'msg':'已经成功设置了教师时间'})
+    return jsonify({'msg':'信息有误，请重试'})
+
+# 取消休息或者补班时间
+@administrator.route('/cancel_time/<username>/<time_type>/<time_id>')
+@login_required
+def cancel_time(username,time_type,time_id):
+    '''这是取消教师的休息或者补班时间的视图
+
+    username:教师的用户名
+    time_type:可能是4或者5,4代表取消休息时间，5代表取消补班时间
+    time_id:这是取消的时间数据在数据库里的id
+    '''
+    if time_type == '4':
+        sr = SpecialRest.query.get(int(time_id))
+        sr.expire = True
+        db.session.add(sr)
+        flash('教师休息时间已取消')
+        return redirect(url_for('administrator.modify_schedule',username=username,time_type=time_type))
+    elif time_type == '5':
+        mt = MakeUpTime.query.get(int(time_id))
+        mt.expire = True
+        db.session.add(mt)
+        flash('教师补班时间已取消')
+        return redirect(url_for('administrator.modify_schedule',username=username,time_type=time_type))
