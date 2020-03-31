@@ -3,13 +3,13 @@ from flask_script import Manager,Shell
 from flask_migrate import Migrate,MigrateCommand
 import os
 from app.models import Role,User,WorkTime,SpecialRest,MakeUpTime,Lesson,StudentProfile,LessonRecord,Order
-from flask_wtf.csrf import CsrfProtect
+from flask_wtf.csrf import CSRFProtect
 
 #创建app
 app = create_app(os.environ.get('EC_CONFIG') or 'default')
 
 # 保护app免受CSRF攻击，这主要是为Ajax请求提供便利的，form表单没有它也不会受到攻击
-CsrfProtect(app)
+CSRFProtect(app)
 
 #初始化命令行和迁移
 manager=Manager(app)

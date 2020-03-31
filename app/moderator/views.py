@@ -565,7 +565,7 @@ def modify_schedule(username,time_type):
                         db.session.add(sr)
                         time = time+timedelta(seconds=3600)
                     flash('休息时间设置成功')
-                    return redirect(url_for('main.personal_center'))
+                    return redirect(url_for('moderator.modify_schedule',username=username,time_type='4'))
             form.teacher.data = teacher.name
             return render_template('moderator/modify_schedule.html',form=form,username=username,time_type=time_type)
         # 设置临时的补班时间
@@ -591,7 +591,7 @@ def modify_schedule(username,time_type):
                         db.session.add(mt)
                         time = time+timedelta(seconds=3600)
                     flash('补班时间设置成功')
-                    return redirect(url_for('main.personal_center'))
+                    return redirect(url_for('moderator.modify_schedule',username=username,time_type='5'))
             form.teacher.data = teacher.name
             return render_template('moderator/modify_schedule.html',form=form,username=username,time_type=time_type)
         # 修改老师的常规工作时间
