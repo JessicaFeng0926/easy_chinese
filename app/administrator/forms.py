@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms.fields import StringField,SubmitField,SelectField,BooleanField,DateTimeField
-from wtforms.validators import Required,Length,Email
+from wtforms.fields import StringField,SubmitField,SelectField,BooleanField,DateTimeField,PasswordField
+from wtforms.validators import Required,Length,Email,EqualTo
 from tools.ectimezones import ectimezone_list
 from tools.teacher_list1 import teacher_list1
 from tools.visitor_student_list1 import visitor_student_list1
@@ -67,4 +67,11 @@ class MakeupTimeForm(FlaskForm):
     teacher = StringField(label='教师',render_kw={'readonly':True})
     start = DateTimeField(label='起始时间',validators=[Required()],description='格式:2008-8-18 8:00:00,请以你自己所在时区为准')
     end = DateTimeField(label='结束时间',validators=[Required()],description='格式:2008-8-18 8:00:00,请以你自己所在时区为准')
+    submit = SubmitField(label='提交')
+
+class ModifyPasswordForm(FlaskForm):
+    '''这是修改老师们的密码的表单'''
+    teacher = SelectField(label='教师',choices=teacher_list1)
+    password=PasswordField(label='密码',validators=[Required(),Length(1,128),EqualTo('password2',message='The two passwords should be the same.')])
+    password2=PasswordField(label='确认密码',validators=[Required(),Length(1,128)])
     submit = SubmitField(label='提交')

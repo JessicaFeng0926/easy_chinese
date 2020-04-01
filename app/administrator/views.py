@@ -2,7 +2,7 @@ from . import administrator
 
 from flask import url_for,render_template,redirect,request,flash,jsonify
 from flask_login import login_required,current_user
-from .forms import AssignTeacherForm,PersonalInfoForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm,PreModifyScheduleForm,RestTimeForm,MakeupTimeForm
+from .forms import AssignTeacherForm,PersonalInfoForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm,PreModifyScheduleForm,RestTimeForm,MakeupTimeForm,ModifyPasswordForm
 from tools.ectimezones import get_localtime,get_utctime
 from app import db
 from ..models import User,Order,Lesson,SpecialRest,MakeUpTime
@@ -740,3 +740,23 @@ def cancel_time(username,time_type,time_id):
         db.session.add(mt)
         flash('教师补班时间已取消')
         return redirect(url_for('administrator.modify_schedule',username=username,time_type=time_type))
+
+# 修改其他老师的密码视图
+@administrator.route('/modify_password',methods=['GET','POST'])
+@login_required
+def modify_password():
+    '''修改老师的密码'''
+    form = ModifyPasswordForm()
+    if form.validate_on_submit():
+        username = form.teacher.data
+        teacher = User.query.filter_by(username=username,role_id=3).first()
+        if teacher:
+            teacher.password = form.password.data
+            db.session.add(teacher)
+            flash("教师密码修改成功")
+            return redirect(url_for('main.personal_center'))
+        else:
+            flash("教师不存在")
+    return render_template('administrator/modify_password.html',form=form)
+
+

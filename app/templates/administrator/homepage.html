@@ -25,7 +25,8 @@
         <li role="presentation" {%if request.path[:20] == '/administrator/pre_c' or request.path[:18] == '/administrator/cha'%}class='active'{%endif%}><a href="{{url_for('administrator.pre_change_teacher')}}">Change Teacher</a></li>
         <li role='presentation' {%if request.path[:20] == '/administrator/pre_b' or request.path[:16] == '/administrator/b'%}class='active'{%endif%}><a href="{{url_for('administrator.pre_book_lesson')}}">Book Lessons</a></li>
         <li role='presentation' {%if request.path[:27] == '/administrator/pre_modify_s' or request.path[:23] == '/administrator/modify_s'%}class='active'{%endif%}><a href="{{url_for('administrator.pre_modify_schedule')}}">Modify Schedule</a></li>
-        <li role='presentation' {%if request.path[:27] == '/administrator/pre_modify_i' or request.path[:23] == '/administrator/modify_p'%}class='active'{%endif%}><a href="{{url_for('administrator.pre_modify_info')}}">Modify Personal Info</a></li>
+        <li role='presentation' {%if request.path[:27] == '/administrator/pre_modify_i' or request.path[:24] == '/administrator/modify_pe'%}class='active'{%endif%}><a href="{{url_for('administrator.pre_modify_info')}}">Modify Personal Info</a></li>
+        <li role='presentation' {%if request.path[:24] == '/administrator/modify_pa'%} class='active' {%endif%}><a href = "{{url_for('administrator.modify_password')}}">Modify Password</a></li>
         <li role="presentation" {%if request.path[:18] == '/administrator/per'%} class='active' {%endif%}><a href="{{url_for('administrator.personal_info')}}">Personal Information</a></li>    
     </ul>
 </div>
