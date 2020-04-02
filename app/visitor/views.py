@@ -4,13 +4,13 @@ from flask_login import current_user,login_required
 from . forms import PersonalInfoForm
 import os
 from .. import db
-from ..models import User,Lesson,Order
+from ..models import User,Lesson,Order,Permission
 from pytz import country_timezones,timezone
 from datetime import datetime,timedelta
 import calendar
 from calendar import monthcalendar,monthrange,Calendar
 from flask_sqlalchemy import Pagination
-
+from tools.decorators import permission_required
 
 #游客个人信息路由和视图
 @visitor.route('/personal_info',methods=['GET','POST'])
@@ -47,6 +47,7 @@ def personal_info():
 #游客预订试听课
 @visitor.route('/trial/<username>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.BOOK_TRIAL)
 def trial(username):
     '''
     游客预订试听课的视图
@@ -242,6 +243,7 @@ def trial(username):
 #游客所有课时包视图
 @visitor.route('/my_packages')
 @login_required
+@permission_required(Permission.BOOK_TRIAL)
 def my_packages():
     orders = current_user.orders.filter(Order.pay_status != 'canceled').order_by(Order.id.desc()).all()
     for order in orders:

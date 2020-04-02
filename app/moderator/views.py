@@ -3,7 +3,7 @@ from . import moderator
 from flask import url_for,render_template,redirect,request,flash,jsonify
 from flask_login import current_user,login_required
 from flask_sqlalchemy import Pagination
-from .. models import User,Order,Lesson,SpecialRest,MakeUpTime,WorkTime
+from .. models import User,Order,Lesson,SpecialRest,MakeUpTime,WorkTime,Permission
 from .forms import AssignTeacherForm,ChangeTeacherForm,PreBookLessonForm,ModifyPersonalInfoForm,PreModifyScheduleForm,RestTimeForm,MakeupTimeForm,PersonalInfoForm
 from app import db
 from tools.ectimezones import get_localtime,get_utctime
@@ -11,10 +11,12 @@ from datetime import datetime,timedelta
 from pytz import country_timezones,timezone
 import calendar
 from calendar import monthrange,monthcalendar,Calendar
+from tools.decorators import permission_required
 
 # 给还没有老师的新生分配老师
 @moderator.route('/assign_teacher/<username>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.MANAGE_RELATIONSHIP)
 def assign_teacher(username):
     '''这是给新生分配老师的视图
 
@@ -46,6 +48,7 @@ def assign_teacher(username):
 # 查看学生的课程列表以及个人信息
 @moderator.route('/show_student_profile/<username>')
 @login_required
+@permission_required(Permission.BOOK_LESSON_FOR_OTHERS)
 def show_student_profile(username):
     '''这是查看学生的课程列表以及个人信息的视图'''
     student = User.query.filter_by(username=username).first()
@@ -80,6 +83,7 @@ def show_student_profile(username):
 # 查看学生某节课的课程记录
 @moderator.route('/check_detail/<lesson_id>')
 @login_required
+@permission_required(Permission.BOOK_LESSON_FOR_OTHERS)
 def check_detail(lesson_id):
     '''这是协管员查看某节课的课程记录的视图'''
     lesson = Lesson.query.get_or_404(lesson_id)
@@ -97,6 +101,7 @@ def check_detail(lesson_id):
 # 显示全校学生名单,为检查学生的详细信息做准备
 @moderator.route('/check_students')
 @login_required
+@permission_required(Permission.BOOK_LESSON_FOR_OTHERS)
 def check_students():
     '''这是显示全校学生名单的页面'''
     students = User.query.filter_by(role_id=2,is_delete=False).order_by(User.username.asc()).all()
@@ -119,6 +124,7 @@ def check_students():
 # 显示全校学生名单，为更换老师做准备
 @moderator.route('/pre_change_teacher')
 @login_required
+@permission_required(Permission.MANAGE_RELATIONSHIP)
 def pre_change_teacher():
     '''显示全校学生名单，点进去就可以给当前学生换老师'''
     students = User.query.filter_by(role_id=2,is_delete=False).order_by(User.username.asc()).all()
@@ -140,6 +146,7 @@ def pre_change_teacher():
 # 给在校生更换老师
 @moderator.route('/change_teacher/<username>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.MANAGE_RELATIONSHIP)
 def change_teacher(username):
     '''这是给具体的学生更换主管老师的视图
     :参数 username:学生的用户名
@@ -192,6 +199,7 @@ def change_teacher(username):
 # 帮助学生选课的预处理视图，提交要选课的学生和老师
 @moderator.route('/pre_book_lesson',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.BOOK_LESSON_FOR_OTHERS)
 def pre_book_lesson():
     '''这是选课的预处理视图'''
     form = PreBookLessonForm()
@@ -204,6 +212,7 @@ def pre_book_lesson():
 # 选课视图
 @moderator.route('/book_lesson/<student_username>/<teacher_username>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.BOOK_LESSON_FOR_OTHERS)
 def book_lesson(student_username,teacher_username):
     teacher = User.query.filter_by(username=teacher_username,role_id=3,is_delete=False).first()
     student = User.query.filter(User.username==student_username,User.is_delete==False).first()
@@ -428,6 +437,7 @@ def book_lesson(student_username,teacher_username):
 # 取消学生的已选课程
 @moderator.route('/cancel',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.BOOK_LESSON_FOR_OTHERS)
 def cancel():
     '''取消学生的已选课程'''
     lesson_id = request.form.get("id",0,type=int)
@@ -452,6 +462,7 @@ def cancel():
 # 修改游客、学生、老师个人信息的预处理视图，主要是生成名单
 @moderator.route('/pre_modify_info')
 @login_required
+@permission_required(Permission.MODIFY_INFO_FOR_OTHERS)
 def pre_modify_info():
     visitors = User.query.filter_by(role_id=1,is_delete=False).order_by(User.username.asc()).all()
     all_visitors = []
@@ -499,6 +510,7 @@ def pre_modify_info():
 # 姓名、角色、时区、是否已经被删除
 @moderator.route('/modify_personal_info/<username>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.MODIFY_INFO_FOR_OTHERS)
 def modify_personal_info(username):
     user = User.query.filter_by(username=username,is_delete=False).first()
     if user and user.role_id in {1,2,3}:
@@ -524,6 +536,7 @@ def modify_personal_info(username):
 # 修改教师的工作时间的预处理视图
 @moderator.route('/pre_modify_schedule',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.MODIFY_TIMETABLE)
 def pre_modify_schedule():
     form = PreModifyScheduleForm()
     if form.validate_on_submit():
@@ -533,6 +546,7 @@ def pre_modify_schedule():
 # 修改教师的工作时间
 @moderator.route('/modify_schedule/<username>/<time_type>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.MODIFY_TIMETABLE)
 def modify_schedule(username,time_type):
     '''根据协管员提交的教师用户名和要修改的时间类型来处理
     :参数 username:教师的用户名
@@ -648,6 +662,7 @@ def modify_schedule(username,time_type):
 # 设置教师的常规工作时间
 @moderator.route('/modify_worktime',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.MODIFY_TIMETABLE)
 def modify_worktime():
     '''设置教师的常规工作时间'''
     new_worktime = request.form.get('new_worktime','',type=str)
@@ -699,6 +714,7 @@ def modify_worktime():
 # 取消休息或者补班时间
 @moderator.route('/cancel_time/<username>/<time_type>/<time_id>')
 @login_required
+@permission_required(Permission.MODIFY_TIMETABLE)  
 def cancel_time(username,time_type,time_id):
     '''这是取消教师的休息或者补班时间的视图
 

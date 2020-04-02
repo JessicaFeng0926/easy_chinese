@@ -4,10 +4,11 @@ from . import teacher
 from .forms import PersonalInfoForm,EditProfileForm,RecordLessonForm
 from pytz import timezone,country_timezones
 from datetime import datetime
-from ..models import User,Lesson,StudentProfile,LessonRecord,Order
+from ..models import User,Lesson,StudentProfile,LessonRecord,Order,Permission
 from .. import db
 import os
 from tools.ectimezones import get_localtime
+from tools.decorators import permission_required
 
 #教师个人信息
 @teacher.route('/personal_info',methods=['GET','POST'])
@@ -74,6 +75,7 @@ def personal_info():
 #我的所有学生
 @teacher.route('/my_students')
 @login_required
+@permission_required(Permission.MANAGE_STUDENT_PROFILE)
 def my_students():
     '''这是我的所有学生的视图'''
     username = request.args.get('username','',type=str)
@@ -150,6 +152,7 @@ def my_students():
 #修改主管学生信息
 @teacher.route('/edit_profile/<username>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.MANAGE_STUDENT_PROFILE)
 def edit_profile(username):
     '''修改主管学生信息'''
     student = User.query.filter_by(username=username,role_id=2).first()
@@ -209,6 +212,7 @@ def edit_profile(username):
 #填写课程详情
 @teacher.route('/record_lesson/<int:id>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.RECORD_LESSON_DETAIL)
 def record_lesson(id):
     '''这是填写课程详情的视图'''
     lesson = Lesson.query.get_or_404(id)
@@ -285,6 +289,7 @@ def record_lesson(id):
 #查看课程详情
 @teacher.route('/check_detail/<int:id>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.RECORD_LESSON_DETAIL)
 def check_detail(id):
     '''查看课程详情'''
     lesson = Lesson.query.get_or_404(id)

@@ -3,7 +3,7 @@ from flask_login import current_user,login_required
 from flask_sqlalchemy import Pagination
 from . import student
 from .forms import PersonalInfoForm,StudentRateForm
-from ..models import User,Lesson,Order,MakeUpTime
+from ..models import User,Lesson,Order,MakeUpTime,Permission
 import os
 from ..import db
 from datetime import datetime,timedelta
@@ -11,6 +11,7 @@ from pytz import country_timezones,timezone
 import calendar
 from calendar import monthcalendar,monthrange,Calendar
 from tools.ectimezones import get_localtime
+from tools.decorators import permission_required
 
 #个人信息
 @student.route('/personal_info',methods=['GET','POST'])
@@ -46,6 +47,7 @@ def personal_info():
 #取消已选课程
 @student.route('/cancel',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.BOOK_LESSON)
 def cancel():
     '''取消相应的课程'''
     lesson_id = request.form.get("id",0,type=int)
@@ -70,6 +72,7 @@ def cancel():
 #给课程评分
 @student.route('/rate/<lesson_id>',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.BOOK_LESSON)
 def rate(lesson_id):
     lesson = Lesson.query.get_or_404(lesson_id)
     if current_user.id != lesson.student_id:
@@ -88,6 +91,7 @@ def rate(lesson_id):
 #我的课时包
 @student.route('/my_packages')
 @login_required
+@permission_required(Permission.BOOK_LESSON)
 def my_packages():
     '''
     这是学生的所有课时包页面
@@ -119,6 +123,7 @@ def my_packages():
 #学生选课
 @student.route('/book_lesson',methods=['GET','POST'])
 @login_required
+@permission_required(Permission.BOOK_LESSON)
 def book_lesson():
     '''这是学生订课的视图'''
     # 找到该学生的老师
