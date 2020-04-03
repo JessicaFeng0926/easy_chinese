@@ -122,6 +122,21 @@ def personal_center():
                 student.teacher = None
             student.enrollment_time = get_localtime(student.orders.filter_by(pay_status='paid').order_by(Order.pay_time.asc()).first().pay_time,current_user)
         return render_template('administrator/homepage.html',students=students)
-        
+
+# 列出全校所有的老师    
+@main.route('/more_teachers')
+def more_teachers():
+    '''列出全校所有的老师'''
+    all_teachers = User.query.filter_by(role_id = 3,is_delete=False).all()
+    teachers = []
+    temp = []
+    for teacher in all_teachers:
+        temp.append(teacher)
+        if len(temp) == 3:
+            teachers.append(temp)
+            temp = []
+    if temp:
+        teachers.append(temp)
+    return render_template('more_teachers.html',teachers = teachers)
 
 
