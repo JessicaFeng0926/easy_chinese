@@ -2,7 +2,7 @@ from app import create_app,db
 from flask_script import Manager,Shell
 from flask_migrate import Migrate,MigrateCommand
 import os
-from app.models import Role,User,WorkTime,SpecialRest,MakeUpTime,Lesson,StudentProfile,LessonRecord,Order
+from app.models import Role,User,WorkTime,SpecialRest,MakeUpTime,Lesson,StudentProfile,LessonRecord,Order,TeacherProfile
 from flask_wtf.csrf import CSRFProtect
 
 #创建app
@@ -26,6 +26,7 @@ def make_shell_context():
         MakeUpTime=MakeUpTime,
         Lesson=Lesson,
         StudentProfile=StudentProfile,
+        TeacherProfile=TeacherProfile,
         LessonRecord=LessonRecord,
         Order = Order,
         )

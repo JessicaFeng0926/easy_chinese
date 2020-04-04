@@ -611,8 +611,12 @@ def modify_schedule(username,time_type):
         # 修改老师的常规工作时间
         elif time_type == '3':
             # 查询这位老师的工作时间，它们是UTC时间，还要转化为协管员时区的时间
-            worktime = teacher.work_time.first().work_time
-            worktime_list = worktime.split(';')
+            if teacher.word_time.first():
+                worktime = teacher.work_time.first().work_time
+                worktime_list = worktime.split(';')
+            else:
+                worktime_list = []
+            
             # 让每个星期从星期天开始
             cal = Calendar(6)
             # 随便获取一个完整的naive的星期的日期

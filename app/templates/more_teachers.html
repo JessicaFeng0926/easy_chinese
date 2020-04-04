@@ -14,8 +14,8 @@
               <img {% if teacher.image %}src="{{url_for('static',filename='media/'+teacher.image)}}" {%else%} src="{{url_for('static',filename='img/noimage.jpg')}}"{%endif%}>
               <div class="caption">
                 <h3>{{teacher.name}}</h3>
-                <p>Amanda is an excellent teacher who is really good at making classes funny.</p>
-                <p><a href="#" class="btn btn-default" role="button">More information</a> <a href="{{url_for('visitor.trial',username=teacher.username)}}" class="btn btn-primary" role="button">Book a trial</a></p>
+                <p>{{teacher.teacher_profile.first().comments}}</p>
+                <p><a href="{{url_for('main.more_info',username=teacher.username)}}" class="btn btn-default" role="button">More information</a> <a href="{{url_for('visitor.trial',username=teacher.username)}}" class="btn btn-primary" role="button">Book a trial</a></p>
               </div>
             </div>
           </div>

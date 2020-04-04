@@ -113,6 +113,8 @@ class User(UserMixin,db.Model):
     lessons = db.relationship('Lesson',backref='student',lazy='dynamic')
     #声明和主管学生信息表的一对一关系
     student_profile = db.relationship('StudentProfile',backref='student',lazy='dynamic')
+    # 声明和教师简历的一对一关系
+    teacher_profile = db.relationship('TeacherProfile',backref='teacher',lazy='dynamic')
     #声明和订单表的一对一关系
     orders = db.relationship('Order',backref='student',lazy='dynamic')
     #逻辑删除
@@ -432,3 +434,14 @@ class Order(db.Model):
     #现在的教师
     teacher_id = db.Column(db.Integer)
 
+class TeacherProfile(db.Model):
+    '''这是教师的简历'''
+    '''这是主管学生信息表的模型类'''
+    __tablename__ = 'teacher_profiles'
+    id = db.Column(db.Integer,primary_key=True)
+    education = db.Column(db.String(256))
+    personality = db.Column(db.String(128))
+    hobby = db.Column(db.String(128))
+    courses = db.Column(db.String(256))
+    comments = db.Column(db.String(256))
+    teacher_id =db.Column(db.Integer,db.ForeignKey("users.id"))

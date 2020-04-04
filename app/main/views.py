@@ -139,4 +139,8 @@ def more_teachers():
         teachers.append(temp)
     return render_template('more_teachers.html',teachers = teachers)
 
-
+# 查看某位老师的简历
+@main.route('/more_info/<username>')
+def more_info(username):
+    teacher = User.query.filter_by(username=username,is_delete=False).first()
+    return render_template('more_info.html',teacher = teacher)

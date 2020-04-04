@@ -1,0 +1,49 @@
+{%extends 'base.html'%}
+{%block head%}
+{{super()}}
+<style>
+    #main{
+        margin-bottom: 155px;
+    }
+</style>
+{%endblock head%}
+{%block mytitle%}More Information{%endblock mytitle%}
+{%block page_content%}
+<div class='page-header'>
+    <h1>{{teacher.name}}</h1>
+</div>
+<div class="col-sm-5 col-md-3"  id='main'>
+    <div class="thumbnail">
+      <img {%if teacher.image%}src="{{url_for('static',filename='media/'+teacher.image)}}"{%else%}src="{{url_for('static',filename='img/noimage.jpg')}}"{%endif%} >
+    </div>
+</div>
+<div class='col-sm-6 col-md-8'>
+    <div class='panel'>
+        <div class='panel-body'>
+           <table class='table'>
+               <tr>
+                   <td><strong>Education Background</strong></td>
+                   <td>{{teacher.teacher_profile.first().education}}</td>
+               </tr>
+               <tr>
+                   <td><strong>Personality</strong></td>
+                   <td>{{teacher.teacher_profile.first().personality}}</td> 
+                </tr>
+                <tr>
+                    <td><strong>Hobby</strong></td>
+                    <td>{{teacher.teacher_profile.first().hobby}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Courses</strong></td>
+                    <td>{{teacher.teacher_profile.first().courses}}</td>
+                </tr>
+                <tr>
+                    <td><strong>What do students say about me?</strong></td>
+                    <td>{{teacher.teacher_profile.first().comments}}</td>
+                </tr>
+           </table>
+           <p class='text-right'><a href="{{url_for('visitor.trial',username=teacher.username)}}" role='button' class='btn btn-primary'>Book a trial</a></p>
+        </div>
+    </div>
+</div>
+{%endblock page_content%}
